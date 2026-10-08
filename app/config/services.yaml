@@ -1,0 +1,74 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+# See also https://symfony.com/doc/current/service_container/import.html
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/Infrastructure/Database/Migrations/'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+    App\Domain\DictionaryFeature\Service\CheckWordExistenceServiceInterface:
+        alias: App\Infrastructure\DictionaryFeature\Service\CheckWordExistenceService
+
+    App\Domain\SecretFeature\Storage\CreateSecretStorageInterface:
+        alias: App\Infrastructure\SecretFeature\Storage\CreateSecretStorage
+
+    App\Domain\SecretFeature\Repository\SecretRepositoryInterface:
+        alias: App\Infrastructure\SecretFeature\Doctrine\Repository\SecretRepository
+
+    App\Domain\GameFeature\Factory\GameFactoryInterface:
+        alias: App\Infrastructure\GameFeature\Factory\GameFactory
+
+    App\Domain\GameFeature\Storage\CreateGameStorageInterface:
+        alias: App\Infrastructure\GameFeature\Storage\CreateGameStorage
+
+    App\Domain\GameFeature\Repository\GameRepositoryInterface:
+        alias: App\Infrastructure\GameFeature\Doctrine\Repository\GameRepository
+
+    App\Domain\GuessFeature\Factory\GuessFactoryInterface:
+        alias: App\Infrastructure\GuessFeature\Factory\GuessFactory
+
+    App\Domain\GuessFeature\Storage\CreateGuessStorageInterface:
+        alias: App\Infrastructure\GuessFeature\Storage\CreateGuessStorage
+
+    App\Domain\GuessFeature\Repository\GuessRepositoryInterface:
+        alias: App\Infrastructure\GuessFeature\Doctrine\Repository\GuessRepository
+
+    App\Domain\LetterFeature\Repository\LetterRepositoryInterface:
+        alias: App\Infrastructure\LetterFeature\Doctrine\Repository\LetterRepository
+
+    App\Domain\LetterFeature\Factory\LetterFactoryInterface:
+        alias: App\Infrastructure\LetterFeature\Factory\LetterFactory
+
+    App\Domain\LetterFeature\Storage\CreateLetterStorageInterface:
+        alias: App\Infrastructure\LetterFeature\Storage\CreateLetterStorage
+
+    App\Domain\Common\Transaction\TransactionManagerInterface:
+        alias: App\Infrastructure\Database\Transaction\DoctrineTransactionManager
+
+    App\Domain\StringGenerator\RandomStringGeneratorInterface:
+        alias: App\Infrastructure\StringGenerator\RandomStringGenerator
+
+    App\Domain\TokenFeature\Service\CheckAvailableTokenServiceInterface:
+        alias: App\Infrastructure\TokenFeature\Service\CheckAvailableTokenService
+
+    App\Infrastructure\DictionaryFeature\Yandex\Http\LookupHttpService:
+        arguments:
+            $httpClient: '@yandex_dictionary.http_client'
+            $apiKey: '%env(YANDEX_DICTIONARY_API_KEY)%'

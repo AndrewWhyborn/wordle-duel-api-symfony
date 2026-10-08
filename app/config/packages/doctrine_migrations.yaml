@@ -1,0 +1,5 @@
+doctrine_migrations:
+    migrations_paths:
+        # Migrations must not be registered as services (excluded in services.yaml).
+        'App\Infrastructure\Database\Migrations': '%kernel.project_dir%/src/Infrastructure/Database/Migrations'
+    enable_profiler: false
