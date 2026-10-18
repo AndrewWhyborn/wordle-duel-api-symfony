@@ -6,11 +6,13 @@ namespace App\Infrastructure\GameFeature\Http\V1\Controller;
 
 use App\Domain\GameFeature\Exception\GameNotFoundException;
 use App\Domain\SecretFeature\Exception\SecretNotFoundException;
+use App\Infrastructure\Common\Http\Middleware\XAuthTokenMiddleware;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
 use App\Infrastructure\Common\Http\V1\Responder\JsonApiErrorResponder;
 use App\Infrastructure\Common\Http\V1\Responder\ValidationExceptionResponder;
 use App\Infrastructure\GameFeature\Http\V1\ACL\Adaptor\GetGameHttpAdapter;
 use App\Infrastructure\GameFeature\Http\V1\Responder\GameResponder;
+use Kafkiansky\SymfonyMiddleware\Attribute\Middleware;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,6 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Контроллер для получения игры.
  */
+#[Middleware([XAuthTokenMiddleware::class])]
 final class GetGameController extends AbstractController
 {
     /**

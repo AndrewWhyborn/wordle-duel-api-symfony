@@ -56,15 +56,15 @@ readonly class GetGameService
             throw new GameNotFoundException();
         }
 
-        $guesses = $this->guessRepository->findOrderedByGameId((int) $game->getId());
+        $guesses = $this->guessRepository->findOrderedByGameId((string) $game->getId());
         $guessIds = \array_values(\array_filter(
-            \array_map(static fn ($guess): ?int => $guess->getId(), $guesses),
-            static fn (?int $id): bool => $id !== null,
+            \array_map(static fn ($guess): ?string => $guess->getId(), $guesses),
+            static fn (?string $id): bool => $id !== null,
         ));
 
         $lettersByGuessId = [];
         foreach ($this->letterRepository->findOrderedByGuessIds($guessIds) as $letter) {
-            $lettersByGuessId[(int) $letter->getGuessId()][] = $letter;
+            $lettersByGuessId[(string) $letter->getGuessId()][] = $letter;
         }
 
         return new GameWithGuesses(
@@ -72,7 +72,7 @@ readonly class GetGameService
             guesses: \array_map(
                 static fn ($guess): GuessWithLetters => new GuessWithLetters(
                     guess: $guess,
-                    letters: $lettersByGuessId[(int) $guess->getId()] ?? [],
+                    letters: $lettersByGuessId[(string) $guess->getId()] ?? [],
                 ),
                 $guesses,
             ),

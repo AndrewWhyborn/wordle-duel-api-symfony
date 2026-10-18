@@ -21,7 +21,7 @@ class LetterResponder
      *     type: string,
      *     id: string,
      *     attributes: array{
-     *         guessId: int|null,
+     *         guessId: string|null,
      *         index: int|null,
      *         value: string|null,
      *         status: string|null,

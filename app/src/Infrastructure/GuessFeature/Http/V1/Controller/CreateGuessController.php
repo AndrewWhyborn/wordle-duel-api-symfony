@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Infrastructure\GuessFeature\Http\V1\Controller;
 
 use App\Domain\GameFeature\Exception\GameNotFoundException;
+use App\Infrastructure\Common\Http\Middleware\XAuthTokenMiddleware;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
 use App\Infrastructure\Common\Http\V1\Responder\JsonApiErrorResponder;
 use App\Infrastructure\Common\Http\V1\Responder\ValidationExceptionResponder;
 use App\Infrastructure\GuessFeature\Http\V1\ACL\Adaptor\CreateGuessHttpAdapter;
 use App\Infrastructure\GuessFeature\Http\V1\Responder\GuessResponder;
+use Kafkiansky\SymfonyMiddleware\Attribute\Middleware;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +22,7 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Контроллер для создания догадки.
  */
+#[Middleware([XAuthTokenMiddleware::class])]
 final class CreateGuessController extends AbstractController
 {
     /**

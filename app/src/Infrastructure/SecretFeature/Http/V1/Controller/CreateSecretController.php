@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\SecretFeature\Http\V1\Controller;
 
+use App\Infrastructure\Common\Http\Middleware\XAuthTokenMiddleware;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
 use App\Infrastructure\Common\Http\V1\Responder\JsonApiErrorResponder;
 use App\Infrastructure\Common\Http\V1\Responder\ValidationExceptionResponder;
 use App\Infrastructure\SecretFeature\Http\V1\ACL\Adaptor\CreateSecretHttpAdapter;
 use App\Infrastructure\SecretFeature\Http\V1\Responder\SecretResponder;
+use Kafkiansky\SymfonyMiddleware\Attribute\Middleware;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,6 +21,7 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Контроллер для сохранения загаданного слова.
  */
+#[Middleware([XAuthTokenMiddleware::class])]
 final class CreateSecretController extends AbstractController
 {
     /**

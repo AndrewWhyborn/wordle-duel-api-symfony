@@ -8,6 +8,9 @@ use App\Domain\GameFeature\Enum\GameStatus;
 use App\Domain\GameFeature\Exception\InvalidGameStatusTransitionException;
 use App\Domain\GameFeature\Model\GameInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Types\UuidType;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV4;
 
 /**
  * Сущность игры.
@@ -19,12 +22,11 @@ use Doctrine\ORM\Mapping as ORM;
 class Game implements GameInterface
 {
     /**
-     * Идентификатор игры.
+     * Идентификатор игры (UUIDv4 на PostgreSQL до 18).
      */
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    #[ORM\Column(type: UuidType::NAME, unique: true)]
+    private Uuid $id;
 
     /**
      * Идентификатор загаданного слова.
@@ -68,6 +70,7 @@ class Game implements GameInterface
         string $ip,
         GameStatus $status = GameStatus::IN_PROGRESS,
     ) {
+        $this->id = new UuidV4();
         $this->secretId = $secretId;
         $this->ip = $ip;
         $this->status = $status;
@@ -78,9 +81,9 @@ class Game implements GameInterface
     /**
      * @inheritDoc
      */
-    public function getId(): ?int
+    public function getId(): ?string
     {
-        return $this->id;
+        return $this->id->toRfc4122();
     }
 
     /**

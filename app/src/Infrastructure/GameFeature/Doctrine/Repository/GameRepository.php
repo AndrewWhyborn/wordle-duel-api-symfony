@@ -9,6 +9,7 @@ use App\Domain\GameFeature\Repository\GameRepositoryInterface;
 use App\Infrastructure\GameFeature\Doctrine\Entity\Game;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * Репозиторий для чтения игр из БД.
@@ -28,9 +29,9 @@ class GameRepository extends ServiceEntityRepository implements GameRepositoryIn
     /**
      * @inheritDoc
      */
-    public function findById(int $id): ?GameInterface
+    public function findById(string $id): ?GameInterface
     {
-        return $this->find($id);
+        return $this->find(Uuid::fromString($id));
     }
 
     /**

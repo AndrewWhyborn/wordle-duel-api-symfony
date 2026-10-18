@@ -72,3 +72,7 @@ services:
         arguments:
             $httpClient: '@yandex_dictionary.http_client'
             $apiKey: '%env(YANDEX_DICTIONARY_API_KEY)%'
+
+    App\Infrastructure\Common\Http\Middleware\XAuthTokenMiddleware:
+        arguments:
+            $xAuthToken: '%env(X_AUTH_TOKEN)%'

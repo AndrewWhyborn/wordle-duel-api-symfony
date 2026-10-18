@@ -14,12 +14,12 @@ interface LetterInterface
     /**
      * Идентификатор буквы.
      */
-    public function getId(): ?int;
+    public function getId(): ?string;
 
     /**
      * Идентификатор догадки.
      */
-    public function getGuessId(): ?int;
+    public function getGuessId(): ?string;
 
     /**
      * Номер буквы в слове.

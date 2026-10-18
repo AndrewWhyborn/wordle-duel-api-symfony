@@ -14,11 +14,11 @@ interface GameRepositoryInterface
     /**
      * Найдет игру по идентификатору.
      *
-     * @param int $id Идентификатор игры.
+     * @param string $id Идентификатор игры.
      *
      * @return GameInterface|null
      */
-    public function findById(int $id): ?GameInterface;
+    public function findById(string $id): ?GameInterface;
 
     /**
      * Найдет последнюю игру по идентификатору загаданного слова и IP игрока.

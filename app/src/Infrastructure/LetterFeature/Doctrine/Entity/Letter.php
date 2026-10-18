@@ -7,6 +7,9 @@ namespace App\Infrastructure\LetterFeature\Doctrine\Entity;
 use App\Domain\LetterFeature\Enum\LetterStatus;
 use App\Domain\LetterFeature\Model\LetterInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Types\UuidType;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV4;
 
 /**
  * Сущность буквы догадки.
@@ -17,18 +20,17 @@ use Doctrine\ORM\Mapping as ORM;
 class Letter implements LetterInterface
 {
     /**
-     * Идентификатор буквы.
+     * Идентификатор буквы (UUIDv4 на PostgreSQL до 18).
      */
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    #[ORM\Column(type: UuidType::NAME, unique: true)]
+    private Uuid $id;
 
     /**
      * Идентификатор догадки.
      */
-    #[ORM\Column]
-    private int $guessId;
+    #[ORM\Column(type: UuidType::NAME)]
+    private Uuid $guessId;
 
     /**
      * Номер буквы в слове.
@@ -63,18 +65,19 @@ class Letter implements LetterInterface
     /**
      * Конструктор сущности.
      *
-     * @param int          $guessId Идентификатор догадки.
+     * @param string       $guessId Идентификатор догадки.
      * @param int          $index   Номер буквы в слове.
      * @param string       $value   Значение буквы.
      * @param LetterStatus $status  Статус буквы.
      */
     public function __construct(
-        int $guessId,
+        string $guessId,
         int $index,
         string $value,
         LetterStatus $status,
     ) {
-        $this->guessId = $guessId;
+        $this->id = new UuidV4();
+        $this->guessId = Uuid::fromString($guessId);
         $this->index = $index;
         $this->value = $value;
         $this->status = $status;
@@ -85,17 +88,17 @@ class Letter implements LetterInterface
     /**
      * @inheritDoc
      */
-    public function getId(): ?int
+    public function getId(): ?string
     {
-        return $this->id;
+        return $this->id->toRfc4122();
     }
 
     /**
      * @inheritDoc
      */
-    public function getGuessId(): ?int
+    public function getGuessId(): ?string
     {
-        return $this->guessId;
+        return $this->guessId->toRfc4122();
     }
 
     /**

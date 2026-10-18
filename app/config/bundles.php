@@ -14,4 +14,5 @@ return [
     Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
     Koco\Kafka\KocoKafkaBundle::class => ['all' => true],
+    Kafkiansky\SymfonyMiddleware\SymiddlewareBundle::class => ['all' => true],
 ];

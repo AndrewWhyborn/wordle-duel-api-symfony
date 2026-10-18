@@ -38,7 +38,7 @@ readonly class CreateGuessService
      */
     public function execute(GameInterface $game): GuessInterface
     {
-        $gameId = (int) $game->getId();
+        $gameId = (string) $game->getId();
         $index = $this->guessRepository->countByGameId($gameId) + 1;
 
         return $this->createGuessStorage->save(

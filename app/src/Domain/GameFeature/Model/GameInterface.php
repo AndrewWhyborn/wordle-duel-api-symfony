@@ -15,7 +15,7 @@ interface GameInterface
     /**
      * Идентификатор игры.
      */
-    public function getId(): ?int;
+    public function getId(): ?string;
 
     /**
      * Идентификатор загаданного слова.

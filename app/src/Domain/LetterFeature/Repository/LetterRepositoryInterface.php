@@ -14,7 +14,7 @@ interface LetterRepositoryInterface
     /**
      * Найдет буквы догадок, отсортированные по догадке и номеру.
      *
-     * @param list<int> $guessIds Идентификаторы догадок.
+     * @param list<string> $guessIds Идентификаторы догадок.
      *
      * @return list<LetterInterface>
      */

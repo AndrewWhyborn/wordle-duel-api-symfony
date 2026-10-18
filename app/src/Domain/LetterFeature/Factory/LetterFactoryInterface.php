@@ -15,7 +15,7 @@ interface LetterFactoryInterface
     /**
      * Создаст букву.
      *
-     * @param int          $guessId Идентификатор догадки.
+     * @param string       $guessId Идентификатор догадки.
      * @param int          $index   Номер буквы в слове.
      * @param string       $value   Значение буквы.
      * @param LetterStatus $status  Статус буквы.
@@ -23,7 +23,7 @@ interface LetterFactoryInterface
      * @return LetterInterface
      */
     public function create(
-        int $guessId,
+        string $guessId,
         int $index,
         string $value,
         LetterStatus $status,

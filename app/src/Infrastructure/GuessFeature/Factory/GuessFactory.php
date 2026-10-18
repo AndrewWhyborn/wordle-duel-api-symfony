@@ -16,7 +16,7 @@ class GuessFactory implements GuessFactoryInterface
     /**
      * @inheritDoc
      */
-    public function create(int $gameId, int $index): GuessInterface
+    public function create(string $gameId, int $index): GuessInterface
     {
         return new Guess($gameId, $index);
     }

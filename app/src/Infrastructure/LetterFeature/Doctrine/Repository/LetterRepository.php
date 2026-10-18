@@ -9,6 +9,7 @@ use App\Domain\LetterFeature\Repository\LetterRepositoryInterface;
 use App\Infrastructure\LetterFeature\Doctrine\Entity\Letter;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * Репозиторий для чтения букв из БД.
@@ -34,10 +35,15 @@ class LetterRepository extends ServiceEntityRepository implements LetterReposito
             return [];
         }
 
+        $uuids = \array_map(
+            static fn (string $id): Uuid => Uuid::fromString($id),
+            $guessIds,
+        );
+
         /** @var list<LetterInterface> $letters */
         $letters = $this->createQueryBuilder('letter')
             ->andWhere('letter.guessId IN (:guessIds)')
-            ->setParameter('guessIds', $guessIds)
+            ->setParameter('guessIds', $uuids)
             ->orderBy('letter.guessId', 'ASC')
             ->addOrderBy('letter.index', 'ASC')
             ->getQuery()

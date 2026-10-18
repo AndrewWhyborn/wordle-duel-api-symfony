@@ -18,7 +18,7 @@ class LetterFactory implements LetterFactoryInterface
      * @inheritDoc
      */
     public function create(
-        int $guessId,
+        string $guessId,
         int $index,
         string $value,
         LetterStatus $status,

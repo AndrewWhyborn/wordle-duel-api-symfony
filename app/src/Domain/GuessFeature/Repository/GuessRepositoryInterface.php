@@ -14,18 +14,18 @@ interface GuessRepositoryInterface
     /**
      * Найдет догадки игры, отсортированные по номеру.
      *
-     * @param int $gameId Идентификатор игры.
+     * @param string $gameId Идентификатор игры.
      *
      * @return list<GuessInterface>
      */
-    public function findOrderedByGameId(int $gameId): array;
+    public function findOrderedByGameId(string $gameId): array;
 
     /**
      * Вернёт количество догадок в игре.
      *
-     * @param int $gameId Идентификатор игры.
+     * @param string $gameId Идентификатор игры.
      *
      * @return int
      */
-    public function countByGameId(int $gameId): int;
+    public function countByGameId(string $gameId): int;
 }

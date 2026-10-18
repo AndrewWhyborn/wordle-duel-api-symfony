@@ -52,7 +52,7 @@ readonly class CreateGuessHttpAdapter
         $letters = $body['data']['attributes']['letters'];
 
         return $this->createGuessProcess->execute(
-            gameId: (int) $body['data']['attributes']['gameId'],
+            gameId: (string) $body['data']['attributes']['gameId'],
             letters: $letters,
         );
     }
@@ -81,11 +81,11 @@ readonly class CreateGuessHttpAdapter
                                 'gameId' => [
                                     new Constraints\NotBlank(message: 'Укажите идентификатор игры attributes.gameId.'),
                                     new Constraints\Type(
-                                        type: 'integer',
-                                        message: 'Идентификатор игры должен быть целым числом.',
+                                        type: 'string',
+                                        message: 'Идентификатор игры должен быть строкой.',
                                     ),
-                                    new Constraints\Positive(
-                                        message: 'Идентификатор игры должен быть положительным числом.',
+                                    new Constraints\Uuid(
+                                        message: 'Идентификатор игры должен быть корректным UUID.',
                                     ),
                                 ],
                                 'letters' => [

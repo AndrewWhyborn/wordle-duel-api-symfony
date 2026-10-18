@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\KafkaFeature\Http\V1\Controller;
 
+use App\Infrastructure\Common\Http\Middleware\XAuthTokenMiddleware;
 use App\Infrastructure\Common\JsonEncoding\JsonEncoder;
 use App\Infrastructure\KafkaFeature\KafkaMessage;
+use Kafkiansky\SymfonyMiddleware\Attribute\Middleware;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Middleware([XAuthTokenMiddleware::class])]
 class SendToKafkaController extends AbstractController
 {
     /**

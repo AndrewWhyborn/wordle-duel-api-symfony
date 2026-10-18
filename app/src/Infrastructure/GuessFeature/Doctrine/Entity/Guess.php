@@ -6,6 +6,9 @@ namespace App\Infrastructure\GuessFeature\Doctrine\Entity;
 
 use App\Domain\GuessFeature\Model\GuessInterface;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Types\UuidType;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV4;
 
 /**
  * Сущность догадки.
@@ -16,18 +19,17 @@ use Doctrine\ORM\Mapping as ORM;
 class Guess implements GuessInterface
 {
     /**
-     * Идентификатор догадки.
+     * Идентификатор догадки (UUIDv4 на PostgreSQL до 18).
      */
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    #[ORM\Column(type: UuidType::NAME, unique: true)]
+    private Uuid $id;
 
     /**
      * Идентификатор игры.
      */
-    #[ORM\Column]
-    private int $gameId;
+    #[ORM\Column(type: UuidType::NAME)]
+    private Uuid $gameId;
 
     /**
      * Номер догадки в игре.
@@ -50,12 +52,13 @@ class Guess implements GuessInterface
     /**
      * Конструктор сущности.
      *
-     * @param int $gameId Идентификатор игры.
-     * @param int $index  Номер догадки в игре.
+     * @param string $gameId Идентификатор игры.
+     * @param int    $index  Номер догадки в игре.
      */
-    public function __construct(int $gameId, int $index)
+    public function __construct(string $gameId, int $index)
     {
-        $this->gameId = $gameId;
+        $this->id = new UuidV4();
+        $this->gameId = Uuid::fromString($gameId);
         $this->index = $index;
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
@@ -64,17 +67,17 @@ class Guess implements GuessInterface
     /**
      * @inheritDoc
      */
-    public function getId(): ?int
+    public function getId(): ?string
     {
-        return $this->id;
+        return $this->id->toRfc4122();
     }
 
     /**
      * @inheritDoc
      */
-    public function getGameId(): ?int
+    public function getGameId(): ?string
     {
-        return $this->gameId;
+        return $this->gameId->toRfc4122();
     }
 
     /**

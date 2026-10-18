@@ -57,14 +57,14 @@ readonly class CreateGuessProcess
     /**
      * Создаст догадку вместе с буквами в одной транзакции.
      *
-     * @param int          $gameId  Идентификатор игры.
+     * @param string       $gameId  Идентификатор игры.
      * @param list<string> $letters Введённые буквы.
      *
      * @return GuessWithLetters
      *
      * @throws GameNotFoundException
      */
-    public function execute(int $gameId, array $letters): GuessWithLetters
+    public function execute(string $gameId, array $letters): GuessWithLetters
     {
         $game = $this->gameRepository->findById($gameId);
 
@@ -100,7 +100,7 @@ readonly class CreateGuessProcess
         $this->entityManager->beginTransaction();
 
         $guess = $this->createGuessService->execute($game);
-        $guessId = (int) $guess->getId();
+        $guessId = (string) $guess->getId();
 
         $statuses = $this->compareLettersAndSecretService->execute($secret, $letters);
         $letterEntities = [];

@@ -12,12 +12,12 @@ interface GuessInterface
     /**
      * Идентификатор догадки.
      */
-    public function getId(): ?int;
+    public function getId(): ?string;
 
     /**
      * Идентификатор игры.
      */
-    public function getGameId(): ?int;
+    public function getGameId(): ?string;
 
     /**
      * Номер догадки в игре.

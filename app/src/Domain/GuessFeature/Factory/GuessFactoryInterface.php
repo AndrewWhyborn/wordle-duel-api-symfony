@@ -14,10 +14,10 @@ interface GuessFactoryInterface
     /**
      * Создаст догадку.
      *
-     * @param int $gameId Идентификатор игры.
-     * @param int $index  Номер догадки в игре.
+     * @param string $gameId Идентификатор игры.
+     * @param int    $index  Номер догадки в игре.
      *
      * @return GuessInterface
      */
-    public function create(int $gameId, int $index): GuessInterface;
+    public function create(string $gameId, int $index): GuessInterface;
 }
