@@ -1,0 +1,707 @@
+nelmio_api_doc:
+  documentation:
+    info:
+      title: Wordle Duel API
+      description: 'JSON:API для Wordle Duel (загаданные слова, игры, догадки).'
+      version: 1.0.0
+    paths:
+      /api/v1/games:
+        get:
+          tags:
+          - Игры
+          summary: Получить игру по загаданному слову
+          description: >-
+            Возвращает игру для filter[secretId] и IP клиента, включая догадки
+            и буквы в составном документе JSON:API.
+          operationId: getGame
+          parameters:
+          - name: filter[secretId]
+            in: query
+            description: Идентификатор загаданного слова для поиска игры по IP клиента.
+            required: true
+            schema:
+              type: string
+              example: a1b2c3d4e5f6789012345678abcdef01
+              maxLength: 32
+          responses:
+            '200':
+              description: Игра найдена (с включёнными догадками и буквами, если есть)
+              content:
+                application/json:
+                  schema:
+                    properties:
+                      data:
+                        properties:
+                          type:
+                            type: string
+                            description: Тип ресурса JSON:API.
+                            example: games
+                            enum:
+                            - games
+                          id:
+                            type: string
+                            format: uuid
+                            description: UUID игры.
+                            example: 550e8400-e29b-41d4-a716-446655440000
+                          attributes:
+                            properties:
+                              status:
+                                type: string
+                                description: Статус игры (in_progress — в процессе, completed — выиграна, failed — проиграна).
+                                example: in_progress
+                                nullable: true
+                                enum:
+                                - in_progress
+                                - completed
+                                - failed
+                              createdAt:
+                                type: string
+                                format: date-time
+                                description: Дата и время создания игры.
+                                nullable: true
+                              updatedAt:
+                                type: string
+                                format: date-time
+                                description: Дата и время последнего обновления игры.
+                                nullable: true
+                            type: object
+                          relationships:
+                            description: Связи ресурса игры.
+                            properties:
+                              guesses:
+                                description: Ссылки на догадки этой игры.
+                                properties:
+                                  data:
+                                    type: array
+                                    items:
+                                      properties:
+                                        type:
+                                          type: string
+                                          enum:
+                                          - guesses
+                                        id:
+                                          type: string
+                                          format: uuid
+                                          description: UUID догадки.
+                                      type: object
+                                type: object
+                            type: object
+                        type: object
+                      included:
+                        description: Объекты ресурсов догадок и букв (составной документ JSON:API).
+                        type: array
+                        items:
+                          properties:
+                            type:
+                              type: string
+                              description: Тип ресурса (guesses или letters).
+                              enum:
+                              - guesses
+                              - letters
+                            id:
+                              type: string
+                              format: uuid
+                              description: UUID ресурса.
+                            attributes:
+                              properties:
+                                gameId:
+                                  type: string
+                                  format: uuid
+                                  description: UUID игры.
+                                  nullable: true
+                                guessId:
+                                  type: string
+                                  format: uuid
+                                  description: UUID догадки.
+                                  nullable: true
+                                index:
+                                  type: integer
+                                  description: Порядковый индекс (догадки в игре или буквы в догадке).
+                                  nullable: true
+                                value:
+                                  type: string
+                                  description: Значение буквы.
+                                  nullable: true
+                                status:
+                                  type: string
+                                  description: Статус буквы (far — нет в слове, near — есть, но не на месте, success — на месте).
+                                  nullable: true
+                                  enum:
+                                  - far
+                                  - near
+                                  - success
+                                createdAt:
+                                  type: string
+                                  format: date-time
+                                  description: Дата и время создания.
+                                  nullable: true
+                                updatedAt:
+                                  type: string
+                                  format: date-time
+                                  description: Дата и время обновления.
+                                  nullable: true
+                              type: object
+                            relationships:
+                              type: object
+                              description: Связи ресурса.
+                              nullable: true
+                          type: object
+                    type: object
+            '400':
+              description: Ошибка валидации
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '401':
+              description: Отсутствует или неверный заголовок X-Auth-Token
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '404':
+              description: Загаданное слово или игра не найдены
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '500':
+              description: Непредвиденная ошибка сервера
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+          security:
+          - XAuthToken: []
+        post:
+          tags:
+          - Игры
+          summary: Создать игру
+          description: Создаёт игру для указанного загаданного слова и IP клиента.
+          operationId: createGame
+          requestBody:
+            required: true
+            description: |
+              Тело запроса в формате JSON:API.
+
+              **attributes:**
+              - **secretId** — идентификатор загаданного слова (не длиннее 32 символов).
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateGameRequest'
+          responses:
+            '201':
+              description: Игра создана
+              content:
+                application/json:
+                  schema:
+                    properties:
+                      data:
+                        properties:
+                          type:
+                            type: string
+                            description: Тип ресурса JSON:API.
+                            example: games
+                            enum:
+                            - games
+                          id:
+                            description: UUID игры.
+                            type: string
+                            format: uuid
+                            example: 550e8400-e29b-41d4-a716-446655440000
+                          attributes:
+                            properties:
+                              status:
+                                type: string
+                                description: Статус игры (in_progress — в процессе, completed — выиграна, failed — проиграна).
+                                example: in_progress
+                                nullable: true
+                                enum:
+                                - in_progress
+                                - completed
+                                - failed
+                              createdAt:
+                                type: string
+                                format: date-time
+                                description: Дата и время создания игры.
+                                nullable: true
+                              updatedAt:
+                                type: string
+                                format: date-time
+                                description: Дата и время последнего обновления игры.
+                                nullable: true
+                            type: object
+                        type: object
+                    type: object
+            '400':
+              description: Ошибка валидации
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '401':
+              description: Отсутствует или неверный заголовок X-Auth-Token
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '404':
+              description: Загаданное слово не найдено
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '409':
+              description: Конфликт при создании игры
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '500':
+              description: Непредвиденная ошибка сервера
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+          security:
+          - XAuthToken: []
+      /api/v1/guesses:
+        post:
+          tags:
+          - Догадки
+          summary: Создать догадку
+          description: >-
+            Отправляет догадку из 5 кириллических букв для игры и возвращает
+            догадку со статусами букв.
+          operationId: createGuess
+          requestBody:
+            required: true
+            description: |
+              Тело запроса в формате JSON:API.
+
+              **attributes:**
+              - **gameId** — UUID игры.
+              - **letters** — ровно пять одиночных кириллических букв.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateGuessRequest'
+          responses:
+            '201':
+              description: Догадка создана
+              content:
+                application/json:
+                  schema:
+                    properties:
+                      data:
+                        properties:
+                          type:
+                            type: string
+                            description: Тип ресурса JSON:API.
+                            example: guesses
+                            enum:
+                            - guesses
+                          id:
+                            type: string
+                            format: uuid
+                            description: UUID догадки.
+                          attributes:
+                            properties:
+                              gameId:
+                                type: string
+                                format: uuid
+                                description: UUID игры.
+                                nullable: true
+                              index:
+                                type: integer
+                                description: Порядковый номер догадки в игре (с нуля).
+                                example: 0
+                                nullable: true
+                              createdAt:
+                                type: string
+                                format: date-time
+                                description: Дата и время создания догадки.
+                                nullable: true
+                              updatedAt:
+                                type: string
+                                format: date-time
+                                description: Дата и время обновления догадки.
+                                nullable: true
+                            type: object
+                          relationships:
+                            description: Связи ресурса догадки.
+                            properties:
+                              letters:
+                                description: Ссылки на буквы этой догадки.
+                                properties:
+                                  data:
+                                    type: array
+                                    items:
+                                      properties:
+                                        type:
+                                          type: string
+                                          enum:
+                                          - letters
+                                        id:
+                                          type: string
+                                          format: uuid
+                                          description: UUID буквы.
+                                      type: object
+                                type: object
+                            type: object
+                        type: object
+                      included:
+                        description: Объекты ресурсов букв (составной документ JSON:API).
+                        type: array
+                        items:
+                          properties:
+                            type:
+                              type: string
+                              description: Тип ресурса JSON:API.
+                              example: letters
+                              enum:
+                              - letters
+                            id:
+                              type: string
+                              format: uuid
+                              description: UUID буквы.
+                            attributes:
+                              properties:
+                                guessId:
+                                  type: string
+                                  format: uuid
+                                  description: UUID догадки.
+                                  nullable: true
+                                index:
+                                  type: integer
+                                  description: Позиция буквы в догадке (с нуля).
+                                  nullable: true
+                                value:
+                                  type: string
+                                  description: Значение буквы.
+                                  example: С
+                                  nullable: true
+                                status:
+                                  type: string
+                                  description: Статус буквы (far — нет в слове, near — есть, но не на месте, success — на месте).
+                                  example: near
+                                  nullable: true
+                                  enum:
+                                  - far
+                                  - near
+                                  - success
+                                createdAt:
+                                  type: string
+                                  format: date-time
+                                  description: Дата и время создания.
+                                  nullable: true
+                                updatedAt:
+                                  type: string
+                                  format: date-time
+                                  description: Дата и время обновления.
+                                  nullable: true
+                              type: object
+                          type: object
+                    type: object
+            '400':
+              description: Ошибка валидации
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '401':
+              description: Отсутствует или неверный заголовок X-Auth-Token
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '404':
+              description: Игра не найдена
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '500':
+              description: Непредвиденная ошибка сервера
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+          security:
+          - XAuthToken: []
+      /api/v1/kafka:
+        post:
+          tags:
+          - Kafka
+          summary: Отправить тестовое сообщение в Kafka
+          description: >-
+            Отправляет фиксированный тестовый JSON в Kafka через Symfony Messenger.
+            Тело запроса не требуется.
+          operationId: sendToKafka
+          responses:
+            '204':
+              description: Сообщение отправлено (пустое тело ответа)
+            '401':
+              description: Отсутствует или неверный заголовок X-Auth-Token
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+          security:
+          - XAuthToken: []
+      /api/v1/secrets:
+        post:
+          tags:
+          - Загаданные слова
+          summary: Создать загаданное слово
+          description: Сохраняет загаданное слово из 5 букв и возвращает ресурс JSON:API.
+          operationId: createSecret
+          requestBody:
+            required: true
+            description: |
+              Тело запроса в формате JSON:API.
+
+              **attributes:**
+              - **value** — загаданное слово из 5 букв (сохраняется в верхнем регистре).
+              - **isRealWord** — если `true` (по умолчанию), слово должно существовать в словаре.
+              - **allowRetry** — разрешена ли повторная игра с тем же загаданным словом.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateSecretRequest'
+          responses:
+            '201':
+              description: Загаданное слово создано
+              content:
+                application/json:
+                  schema:
+                    properties:
+                      data:
+                        properties:
+                          type:
+                            type: string
+                            description: Тип ресурса JSON:API.
+                            example: secrets
+                            enum:
+                            - secrets
+                          id:
+                            description: Идентификатор загаданного слова (токен из 32 символов).
+                            type: string
+                            example: a1b2c3d4e5f6789012345678abcdef01
+                            maxLength: 32
+                          attributes:
+                            properties:
+                              value:
+                                type: string
+                                description: Загаданное слово.
+                                example: СЛОВО
+                                nullable: true
+                              isRealWord:
+                                type: boolean
+                                description: Проверялось ли слово по словарю.
+                                example: true
+                                nullable: true
+                              allowRetry:
+                                type: boolean
+                                description: Разрешена ли повторная игра с тем же загаданным словом.
+                                example: false
+                                nullable: true
+                              createdAt:
+                                type: string
+                                format: date-time
+                                description: Дата и время создания.
+                                example: '2026-03-18T12:00:00+00:00'
+                                nullable: true
+                            type: object
+                        type: object
+                    type: object
+            '400':
+              description: Ошибка валидации
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '401':
+              description: Отсутствует или неверный заголовок X-Auth-Token
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+            '500':
+              description: Непредвиденная ошибка сервера
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+          security:
+          - XAuthToken: []
+    components:
+      schemas:
+        CreateSecretAttributes:
+          type: object
+          required:
+          - value
+          properties:
+            value:
+              title: value
+              description: Загаданное слово из 5 букв (сохраняется в верхнем регистре).
+              type: string
+              example: слово
+              maxLength: 5
+              minLength: 5
+            isRealWord:
+              title: isRealWord
+              description: Если true (по умолчанию), слово должно существовать в словаре.
+              type: boolean
+              example: true
+              default: true
+            allowRetry:
+              title: allowRetry
+              description: Разрешена ли повторная игра с тем же загаданным словом.
+              type: boolean
+              example: false
+              default: false
+        CreateSecretRequest:
+          type: object
+          required:
+          - data
+          properties:
+            data:
+              type: object
+              required:
+              - type
+              - attributes
+              properties:
+                type:
+                  type: string
+                  description: Тип ресурса JSON:API.
+                  example: secrets
+                  enum:
+                  - secrets
+                attributes:
+                  $ref: '#/components/schemas/CreateSecretAttributes'
+        CreateGameAttributes:
+          type: object
+          required:
+          - secretId
+          properties:
+            secretId:
+              title: secretId
+              description: Идентификатор загаданного слова (не длиннее 32 символов).
+              type: string
+              example: a1b2c3d4e5f6789012345678abcdef01
+              maxLength: 32
+        CreateGameRequest:
+          type: object
+          required:
+          - data
+          properties:
+            data:
+              type: object
+              required:
+              - type
+              - attributes
+              properties:
+                type:
+                  type: string
+                  description: Тип ресурса JSON:API.
+                  example: games
+                  enum:
+                  - games
+                attributes:
+                  $ref: '#/components/schemas/CreateGameAttributes'
+        CreateGuessAttributes:
+          type: object
+          required:
+          - gameId
+          - letters
+          properties:
+            gameId:
+              title: gameId
+              description: UUID игры.
+              type: string
+              format: uuid
+              example: 550e8400-e29b-41d4-a716-446655440000
+            letters:
+              title: letters
+              description: Ровно пять одиночных кириллических букв.
+              type: array
+              items:
+                type: string
+                example: С
+                maxLength: 1
+                minLength: 1
+              example:
+              - С
+              - Л
+              - О
+              - В
+              - О
+              maxItems: 5
+              minItems: 5
+        CreateGuessRequest:
+          type: object
+          required:
+          - data
+          properties:
+            data:
+              type: object
+              required:
+              - type
+              - attributes
+              properties:
+                type:
+                  type: string
+                  description: Тип ресурса JSON:API.
+                  example: guesses
+                  enum:
+                  - guesses
+                attributes:
+                  $ref: '#/components/schemas/CreateGuessAttributes'
+        JsonApiError:
+          required:
+          - status
+          - title
+          - detail
+          properties:
+            status:
+              description: HTTP-код статуса в виде строки.
+              type: string
+              example: '400'
+            title:
+              description: Краткий заголовок ошибки.
+              type: string
+              example: Ошибка валидации
+            detail:
+              description: Подробное описание ошибки.
+              type: string
+              example: Укажите значение загаданного слова attributes.value.
+          type: object
+        JsonApiErrors:
+          required:
+          - errors
+          properties:
+            errors:
+              description: Список ошибок в формате JSON:API.
+              type: array
+              items:
+                $ref: '#/components/schemas/JsonApiError'
+          type: object
+      securitySchemes:
+        XAuthToken:
+          type: apiKey
+          description: Общий API-токен из переменной окружения X_AUTH_TOKEN.
+          name: X-Auth-Token
+          in: header
+    security:
+    - XAuthToken: []
+    tags:
+    - name: Игры
+      description: Создание и получение игр.
+    - name: Догадки
+      description: Отправка догадок в игру.
+    - name: Kafka
+      description: Тестовая отправка сообщений в Kafka.
+    - name: Загаданные слова
+      description: Создание загаданных слов.

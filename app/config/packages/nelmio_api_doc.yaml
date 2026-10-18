@@ -1,0 +1,16 @@
+imports:
+    - { resource: openapi/documentation.yaml }
+
+nelmio_api_doc:
+    html_config:
+        swagger_ui_config:
+            defaultModelRendering: example
+            defaultModelExpandDepth: 5
+            defaultModelsExpandDepth: 3
+    areas:
+        default:
+            path_patterns:
+                # Document /api routes, but exclude Swagger UI and OpenAPI JSON/YAML.
+                - ^/api(?!/doc)
+            # Paths come from openapi/documentation.yaml, not from controller attributes.
+            disable_default_routes: true

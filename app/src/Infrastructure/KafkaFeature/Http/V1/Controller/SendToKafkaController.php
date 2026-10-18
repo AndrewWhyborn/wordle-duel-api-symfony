@@ -7,6 +7,7 @@ namespace App\Infrastructure\KafkaFeature\Http\V1\Controller;
 use App\Infrastructure\Common\Http\Middleware\XAuthTokenMiddleware;
 use App\Infrastructure\Common\JsonEncoding\JsonEncoder;
 use App\Infrastructure\KafkaFeature\KafkaMessage;
+use JsonException;
 use Kafkiansky\SymfonyMiddleware\Attribute\Middleware;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +22,7 @@ class SendToKafkaController extends AbstractController
      * Отправит уведомление в Kafka.
      *
      * @throws ExceptionInterface
-     * @throws \JsonException
+     * @throws JsonException
      */
     #[Route(path: '/api/v1/kafka', name: 'api_v1_send_to_kafka', methods: [Request::METHOD_POST])]
     public function __invoke(MessageBusInterface $messageBus, JsonEncoder $jsonEncoder): void

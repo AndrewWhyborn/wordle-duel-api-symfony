@@ -47,7 +47,11 @@ final class CreateSecretController extends AbstractController
      *
      * @param Request $request HTTP-запрос.
      */
-    #[Route(path: '/api/v1/secrets', name: 'api_v1_create_secret', methods: [Request::METHOD_POST])]
+    #[Route(
+        path: '/api/v1/secrets',
+        name: 'api_v1_create_secret',
+        methods: [Request::METHOD_POST]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $response = new JsonResponse();

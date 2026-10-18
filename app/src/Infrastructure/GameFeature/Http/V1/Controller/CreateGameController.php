@@ -49,7 +49,11 @@ final class CreateGameController extends AbstractController
      *
      * @param Request $request HTTP-запрос.
      */
-    #[Route(path: '/api/v1/games', name: 'api_v1_create_game', methods: [Request::METHOD_POST])]
+    #[Route(
+        path: '/api/v1/games',
+        name: 'api_v1_create_game',
+        methods: [Request::METHOD_POST]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $response = new JsonResponse();

@@ -1,0 +1,18 @@
+# Swagger UI at /api/doc (no X-Auth — middleware is only on API controllers).
+app.swagger_ui:
+    resource: '@NelmioApiDocBundle/config/routing/swaggerui.php'
+    prefix: /api/doc
+
+# OpenAPI JSON
+app.swagger:
+    path: /api/doc.json
+    methods: GET
+    defaults:
+        _controller: nelmio_api_doc.controller.swagger
+
+# OpenAPI YAML
+app.swagger_yaml:
+    path: /api/doc.yaml
+    methods: GET
+    defaults:
+        _controller: nelmio_api_doc.controller.swagger_yaml

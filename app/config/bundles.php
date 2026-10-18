@@ -15,4 +15,5 @@ return [
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
     Koco\Kafka\KocoKafkaBundle::class => ['all' => true],
     Kafkiansky\SymfonyMiddleware\SymiddlewareBundle::class => ['all' => true],
+    Nelmio\ApiDocBundle\NelmioApiDocBundle::class => ['all' => true],
 ];

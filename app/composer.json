@@ -12,6 +12,7 @@
         "doctrine/orm": "^3.7",
         "kafkiansky/symfony-middleware": "^1.0",
         "koco/messenger-kafka": "^0.19.0",
+        "nelmio/api-doc-bundle": "^5.13",
         "phpdocumentor/reflection-docblock": "^6.0",
         "phpstan/phpdoc-parser": "^2.3",
         "symfony/asset": "7.4.*",
