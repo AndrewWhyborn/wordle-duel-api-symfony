@@ -45,7 +45,11 @@ final class CreateGuessController extends AbstractController
      *
      * @param Request $request HTTP-запрос.
      */
-    #[Route(path: '/api/v1/guesses', name: 'api_v1_create_guess', methods: [Request::METHOD_POST])]
+    #[Route(
+        path: '/api/v1/guesses',
+        name: 'api_v1_create_guess',
+        methods: [Request::METHOD_POST]
+    )]
     public function __invoke(Request $request): JsonResponse
     {
         $response = new JsonResponse();

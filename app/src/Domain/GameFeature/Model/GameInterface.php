@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\GameFeature\Model;
 
 use App\Domain\GameFeature\Enum\GameStatus;
+use App\Domain\GameFeature\Exception\InvalidGameStatusTransitionException;
 
 /**
  * Игра.
@@ -30,6 +31,15 @@ interface GameInterface
      * Статус игры.
      */
     public function getStatus(): ?GameStatus;
+
+    /**
+     * Установит статус игры.
+     *
+     * @param GameStatus $status Статус игры.
+     *
+     * @throws InvalidGameStatusTransitionException
+     */
+    public function setStatus(GameStatus $status): void;
 
     /**
      * Дата создания.

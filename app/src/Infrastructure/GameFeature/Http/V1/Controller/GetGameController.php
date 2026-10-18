@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\GameFeature\Http\V1\Controller;
 
 use App\Domain\GameFeature\Exception\GameNotFoundException;
+use App\Domain\SecretFeature\Exception\SecretNotFoundException;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
 use App\Infrastructure\Common\Http\V1\Responder\JsonApiErrorResponder;
 use App\Infrastructure\Common\Http\V1\Responder\ValidationExceptionResponder;
@@ -62,7 +63,7 @@ final class GetGameController extends AbstractController
         } catch (ValidatorException $exception) {
             $response->setStatusCode(Response::HTTP_BAD_REQUEST);
             $response->setData(['errors' => $this->validationExceptionResponder->compose($exception->violations)]);
-        } catch (GameNotFoundException $exception) {
+        } catch (SecretNotFoundException|GameNotFoundException $exception) {
             $response->setStatusCode(Response::HTTP_NOT_FOUND);
             $response->setData([
                 'errors' => [

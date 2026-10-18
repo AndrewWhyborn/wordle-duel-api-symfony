@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\GameFeature\Doctrine\Entity;
 
 use App\Domain\GameFeature\Enum\GameStatus;
+use App\Domain\GameFeature\Exception\InvalidGameStatusTransitionException;
 use App\Domain\GameFeature\Model\GameInterface;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -104,6 +105,19 @@ class Game implements GameInterface
     public function getStatus(): ?GameStatus
     {
         return $this->status;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setStatus(GameStatus $status): void
+    {
+        if ($this->status !== GameStatus::IN_PROGRESS) {
+            throw new InvalidGameStatusTransitionException();
+        }
+
+        $this->status = $status;
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     /**

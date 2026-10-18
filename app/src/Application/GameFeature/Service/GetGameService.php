@@ -10,6 +10,8 @@ use App\Domain\GameFeature\Exception\GameNotFoundException;
 use App\Domain\GameFeature\Repository\GameRepositoryInterface;
 use App\Domain\GuessFeature\Repository\GuessRepositoryInterface;
 use App\Domain\LetterFeature\Repository\LetterRepositoryInterface;
+use App\Domain\SecretFeature\Exception\SecretNotFoundException;
+use App\Domain\SecretFeature\Repository\SecretRepositoryInterface;
 
 /**
  * Служба получения игры.
@@ -19,11 +21,13 @@ readonly class GetGameService
     /**
      * Создаст службу.
      *
+     * @param SecretRepositoryInterface $secretRepository Репозиторий для чтения загаданных слов.
      * @param GameRepositoryInterface   $gameRepository   Репозиторий для чтения игр.
      * @param GuessRepositoryInterface  $guessRepository  Репозиторий для чтения догадок.
      * @param LetterRepositoryInterface $letterRepository Репозиторий для чтения букв.
      */
     public function __construct(
+        private SecretRepositoryInterface $secretRepository,
         private GameRepositoryInterface $gameRepository,
         private GuessRepositoryInterface $guessRepository,
         private LetterRepositoryInterface $letterRepository,
@@ -38,12 +42,16 @@ readonly class GetGameService
      *
      * @return GameWithGuesses
      *
+     * @throws SecretNotFoundException
      * @throws GameNotFoundException
      */
     public function execute(string $secretId, string $ip): GameWithGuesses
     {
-        $game = $this->gameRepository->findLastBySecretIdAndIp($secretId, $ip);
+        if ($this->secretRepository->findById($secretId) === null) {
+            throw new SecretNotFoundException();
+        }
 
+        $game = $this->gameRepository->findLastBySecretIdAndIp($secretId, $ip);
         if ($game === null) {
             throw new GameNotFoundException();
         }

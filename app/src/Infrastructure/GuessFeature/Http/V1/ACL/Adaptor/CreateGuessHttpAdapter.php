@@ -109,7 +109,7 @@ readonly class CreateGuessHttpAdapter
                                         ),
                                         new Constraints\Regex(
                                             pattern: '/^[А-Яа-яЁё]$/u',
-                                            message: 'Разрешено вводить только русские буквы.',
+                                            message: 'Разрешено вводить только кириллические символы.',
                                         ),
                                     ]),
                                 ],

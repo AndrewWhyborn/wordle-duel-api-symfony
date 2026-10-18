@@ -51,7 +51,7 @@ readonly class CreateSecretHttpAdapter
         }
 
         return $this->createSecretProcess->execute(
-            value: $body['data']['attributes']['value'],
+            value: \mb_strtoupper($body['data']['attributes']['value']),
             isRealWord: $body['data']['attributes']['isRealWord'] ?? true,
         );
     }
