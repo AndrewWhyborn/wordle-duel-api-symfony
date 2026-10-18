@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\GuessFeature\Http\V1\Controller;
 
+use App\Domain\DictionaryFeature\Exception\WordNotFoundInDictionaryException;
 use App\Domain\GameFeature\Exception\GameNotFoundException;
 use App\Infrastructure\Common\Http\Middleware\XAuthTokenMiddleware;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
@@ -69,6 +70,17 @@ final class CreateGuessController extends AbstractController
         } catch (ValidatorException $exception) {
             $response->setStatusCode(Response::HTTP_BAD_REQUEST);
             $response->setData(['errors' => $this->validationExceptionResponder->compose($exception->violations)]);
+        } catch (WordNotFoundInDictionaryException $exception) {
+            $response->setStatusCode(Response::HTTP_BAD_REQUEST);
+            $response->setData([
+                'errors' => [
+                    $this->jsonApiErrorResponder->compose(
+                        status: (string) Response::HTTP_BAD_REQUEST,
+                        title: 'Ошибка валидации',
+                        detail: $exception->getMessage(),
+                    ),
+                ],
+            ]);
         } catch (GameNotFoundException $exception) {
             $response->setStatusCode(Response::HTTP_NOT_FOUND);
             $response->setData([

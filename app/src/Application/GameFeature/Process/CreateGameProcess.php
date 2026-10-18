@@ -11,9 +11,7 @@ use App\Domain\GameFeature\Model\GameInterface;
 use App\Domain\GameFeature\Repository\GameRepositoryInterface;
 use App\Domain\GameFeature\Storage\CreateGameStorageInterface;
 use App\Domain\SecretFeature\Exception\SecretNotFoundException;
-use App\Domain\SecretFeature\Model\SecretInterface;
 use App\Domain\SecretFeature\Repository\SecretRepositoryInterface;
-use App\Infrastructure\GameFeature\Doctrine\Repository\GameRepository;
 
 /**
  * Процесс создания игры.
@@ -40,21 +38,37 @@ readonly class CreateGameProcess
      * Создаст игру.
      *
      * @param string $secretId Идентификатор загаданного слова.
-     * @param string $ip IP игрока.
+     * @param string $ip       IP игрока.
      *
      * @return GameInterface
+     *
+     * @throws SecretNotFoundException
+     * @throws GameCreationConflictException
      */
     public function execute(string $secretId, string $ip): GameInterface
     {
-        if ($this->secretRepository->findById($secretId) === null) {
+        $secret = $this->secretRepository->findById($secretId);
+        if ($secret === null) {
             throw new SecretNotFoundException();
         }
 
-        /** @var GameInterface|null $existedGame */
         $existedGame = $this->gameRepository->findLastBySecretIdAndIp($secretId, $ip);
 
         if ($existedGame !== null) {
-            throw new GameCreationConflictException('Игра уже создана.');
+            $canRetryFailedGame
+                = $existedGame->getStatus() === GameStatus::FAILED
+                && $secret->isAllowRetry() === true
+            ;
+
+            if (!$canRetryFailedGame) {
+                $message = match ($existedGame->getStatus()) {
+                    GameStatus::COMPLETED => 'Вы уже победили в этой игре.',
+                    GameStatus::FAILED => 'Вы проиграли в этой игре.',
+                    default => 'Игра уже создана.',
+                };
+
+                throw new GameCreationConflictException($message);
+            }
         }
 
         $game = $this->gameFactory->create(
@@ -66,3 +80,4 @@ readonly class CreateGameProcess
         return $this->createGameStorage->save($game);
     }
 }
+

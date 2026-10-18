@@ -177,7 +177,14 @@ nelmio_api_doc:
           tags:
           - Игры
           summary: Создать игру
-          description: Создаёт игру для указанного загаданного слова и IP клиента.
+          description: |
+            Создаёт игру для указанного загаданного слова и IP клиента.
+
+            Если для пары secretId + IP уже есть игра:
+            - **in_progress** — конфликт (`Игра уже создана.`);
+            - **completed** — конфликт (`Вы уже победили в этой игре.`);
+            - **failed** и у секрета `allowRetry=true` — разрешено создать новую игру;
+            - **failed** и `allowRetry=false` — конфликт (`Вы проиграли в этой игре.`).
           operationId: createGame
           requestBody:
             required: true
@@ -253,11 +260,37 @@ nelmio_api_doc:
                   schema:
                     $ref: '#/components/schemas/JsonApiErrors'
             '409':
-              description: Конфликт при создании игры
+              description: |
+                Конфликт при создании игры. Возможные значения `errors[].detail`:
+                - `Игра уже создана.` — уже есть незавершённая игра;
+                - `Вы уже победили в этой игре.` — предыдущая игра выиграна;
+                - `Вы проиграли в этой игре.` — проигрыш без `allowRetry`.
               content:
                 application/json:
                   schema:
                     $ref: '#/components/schemas/JsonApiErrors'
+                  examples:
+                    inProgress:
+                      summary: Игра уже в процессе
+                      value:
+                        errors:
+                        - status: '409'
+                          title: Конфликт.
+                          detail: Игра уже создана.
+                    completed:
+                      summary: Игра уже выиграна
+                      value:
+                        errors:
+                        - status: '409'
+                          title: Конфликт.
+                          detail: Вы уже победили в этой игре.
+                    failedWithoutRetry:
+                      summary: Проигрыш без allowRetry
+                      value:
+                        errors:
+                        - status: '409'
+                          title: Конфликт.
+                          detail: Вы проиграли в этой игре.
             '500':
               description: Непредвиденная ошибка сервера
               content:
@@ -271,9 +304,12 @@ nelmio_api_doc:
           tags:
           - Догадки
           summary: Создать догадку
-          description: >-
+          description: |
             Отправляет догадку из 5 кириллических букв для игры и возвращает
             догадку со статусами букв.
+
+            Если у загаданного слова `isRealWord=true`, склеенное из `letters` слово
+            проверяется в словаре; при отсутствии — ошибка 400.
           operationId: createGuess
           requestBody:
             required: true
@@ -283,6 +319,7 @@ nelmio_api_doc:
               **attributes:**
               - **gameId** — UUID игры.
               - **letters** — ровно пять одиночных кириллических букв.
+                При `isRealWord=true` у секрета должны образовывать существующее слово.
             content:
               application/json:
                 schema:
@@ -405,11 +442,22 @@ nelmio_api_doc:
                           type: object
                     type: object
             '400':
-              description: Ошибка валидации
+              description: |
+                Ошибка валидации или слово из `letters` не найдено в словаре
+                (когда у секрета `isRealWord=true`). Пример `detail`:
+                `Слово «АБВГД» не найдено в словаре, попробуйте другое.`
               content:
                 application/json:
                   schema:
                     $ref: '#/components/schemas/JsonApiErrors'
+                  examples:
+                    wordNotInDictionary:
+                      summary: Слово не найдено в словаре
+                      value:
+                        errors:
+                        - status: '400'
+                          title: Ошибка валидации
+                          detail: Слово «АБВГД» не найдено в словаре, попробуйте другое.
             '401':
               description: Отсутствует или неверный заголовок X-Auth-Token
               content:
@@ -417,7 +465,7 @@ nelmio_api_doc:
                   schema:
                     $ref: '#/components/schemas/JsonApiErrors'
             '404':
-              description: Игра не найдена
+              description: Игра не найдена или уже завершена
               content:
                 application/json:
                   schema:
@@ -464,8 +512,9 @@ nelmio_api_doc:
 
               **attributes:**
               - **value** — загаданное слово из 5 букв (сохраняется в верхнем регистре).
-              - **isRealWord** — если `true` (по умолчанию), слово должно существовать в словаре.
-              - **allowRetry** — разрешена ли повторная игра с тем же загаданным словом.
+              - **isRealWord** — если `true` (по умолчанию), секрет и догадки проверяются в словаре.
+              - **allowRetry** — если `true`, после проигрыша (`failed`) можно создать новую игру
+                с тем же секретом и IP; после победы (`completed`) повтор запрещён.
             content:
               application/json:
                 schema:
@@ -499,14 +548,15 @@ nelmio_api_doc:
                                 nullable: true
                               isRealWord:
                                 type: boolean
-                                description: Проверялось ли слово по словарю.
+                                description: Проверяются ли секрет и догадки по словарю.
                                 example: true
                                 nullable: true
                               allowRetry:
                                 type: boolean
-                                description: Разрешена ли повторная игра с тем же загаданным словом.
+                                description: Разрешено ли создать новую игру после failed.
                                 example: false
                                 nullable: true
+
                               createdAt:
                                 type: string
                                 format: date-time
@@ -552,13 +602,17 @@ nelmio_api_doc:
               minLength: 5
             isRealWord:
               title: isRealWord
-              description: Если true (по умолчанию), слово должно существовать в словаре.
+              description: >-
+                Если true (по умолчанию), секрет при создании и догадки при отправке
+                должны существовать в словаре.
               type: boolean
               example: true
               default: true
             allowRetry:
               title: allowRetry
-              description: Разрешена ли повторная игра с тем же загаданным словом.
+              description: >-
+                Если true, после статуса failed можно создать новую игру для того же
+                secretId и IP. После completed повторное создание запрещено.
               type: boolean
               example: false
               default: false
@@ -625,7 +679,9 @@ nelmio_api_doc:
               example: 550e8400-e29b-41d4-a716-446655440000
             letters:
               title: letters
-              description: Ровно пять одиночных кириллических букв.
+              description: >-
+                Ровно пять одиночных кириллических букв. При isRealWord=true у секрета
+                склеенное слово должно существовать в словаре.
               type: array
               items:
                 type: string

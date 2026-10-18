@@ -8,6 +8,8 @@ use App\Application\GameFeature\Service\ChangeGameStatusService;
 use App\Application\GuessFeature\DTO\GuessWithLetters;
 use App\Application\GuessFeature\Service\CompareLettersAndSecretService;
 use App\Application\GuessFeature\Service\CreateGuessService;
+use App\Domain\DictionaryFeature\Exception\WordNotFoundInDictionaryException;
+use App\Domain\DictionaryFeature\Service\CheckWordExistenceServiceInterface;
 use App\Domain\GameFeature\Enum\GameStatus;
 use App\Domain\GameFeature\Exception\GameNotFoundException;
 use App\Domain\GameFeature\Model\GameInterface;
@@ -39,8 +41,9 @@ readonly class CreateGuessProcess
      * @param LetterFactoryInterface         $letterFactory                  Фабрика для создания сущности буквы.
      * @param CreateLetterStorageInterface   $createLetterStorage            Служба сохранения букв.
      * @param ChangeGameStatusService        $changeGameStatusService        Служба смены статуса игры.
-     * @param EntityManagerInterface         $entityManager                  Менеджер сущностей.
-     * @param SecretRepositoryInterface      $secretRepository               Репозиторий секретных слов.
+     * @param EntityManagerInterface              $entityManager                 Менеджер сущностей.
+     * @param SecretRepositoryInterface           $secretRepository              Репозиторий секретных слов.
+     * @param CheckWordExistenceServiceInterface  $checkWordExistenceService     Служба проверки слова в словаре.
      */
     public function __construct(
         private GameRepositoryInterface $gameRepository,
@@ -51,6 +54,7 @@ readonly class CreateGuessProcess
         private ChangeGameStatusService $changeGameStatusService,
         private EntityManagerInterface $entityManager,
         private SecretRepositoryInterface $secretRepository,
+        private CheckWordExistenceServiceInterface $checkWordExistenceService,
     ) {
     }
 
@@ -63,6 +67,8 @@ readonly class CreateGuessProcess
      * @return GuessWithLetters
      *
      * @throws GameNotFoundException
+     * @throws SecretNotFoundException
+     * @throws WordNotFoundInDictionaryException
      */
     public function execute(string $gameId, array $letters): GuessWithLetters
     {
@@ -78,6 +84,14 @@ readonly class CreateGuessProcess
         $secret = $this->secretRepository->findById($game->getSecretId());
         if ($secret === null) {
             throw new SecretNotFoundException();
+        }
+
+        if ($secret->isRealWord() === true) {
+            $word = \mb_strtolower(\implode('', $letters));
+
+            if ($this->checkWordExistenceService->execute($word) !== true) {
+                throw new WordNotFoundInDictionaryException($word);
+            }
         }
 
         return $this->performExecute($game, $secret, $letters);
