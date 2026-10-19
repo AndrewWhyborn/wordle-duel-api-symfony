@@ -6,7 +6,6 @@ namespace App\Application\GuessFeature\Process;
 
 use App\Application\GameFeature\Service\ChangeGameStatusService;
 use App\Application\GuessFeature\DTO\GuessWithLetters;
-use App\Application\GuessFeature\Service\CompareLettersAndSecretService;
 use App\Application\GuessFeature\Service\CreateGuessService;
 use App\Domain\DictionaryFeature\Exception\WordNotFoundInDictionaryException;
 use App\Domain\DictionaryFeature\Service\CheckWordExistenceServiceInterface;
@@ -22,6 +21,7 @@ use App\Domain\Common\Transaction\TransactionManagerInterface;
 use App\Domain\SecretFeature\Exception\SecretNotFoundException;
 use App\Domain\SecretFeature\Model\SecretInterface;
 use App\Domain\SecretFeature\Repository\SecretRepositoryInterface;
+use App\Domain\WordleFeature\WordleMatcher;
 use App\Domain\WordleFeature\WordleRules;
 
 /**
@@ -34,7 +34,7 @@ readonly class CreateGuessProcess
      *
      * @param GameRepositoryInterface               $gameRepository                 Репозиторий для чтения игр.
      * @param CreateGuessService                    $createGuessService             Служба создания догадки.
-     * @param CompareLettersAndSecretService        $compareLettersAndSecretService Служба сравнения букв с загаданным словом.
+     * @param WordleMatcher                         $wordleMatcher                  Сравнение букв с загаданным словом.
      * @param LetterFactoryInterface                $letterFactory                  Фабрика для создания сущности буквы.
      * @param CreateLetterStorageInterface          $createLetterStorage            Служба сохранения букв.
      * @param ChangeGameStatusService               $changeGameStatusService        Служба смены статуса игры.
@@ -45,7 +45,7 @@ readonly class CreateGuessProcess
     public function __construct(
         private GameRepositoryInterface $gameRepository,
         private CreateGuessService $createGuessService,
-        private CompareLettersAndSecretService $compareLettersAndSecretService,
+        private WordleMatcher $wordleMatcher,
         private LetterFactoryInterface $letterFactory,
         private CreateLetterStorageInterface $createLetterStorage,
         private ChangeGameStatusService $changeGameStatusService,
@@ -58,8 +58,8 @@ readonly class CreateGuessProcess
     /**
      * Создаст догадку вместе с буквами в одной транзакции.
      *
-     * @param string       $gameId  Идентификатор игры.
-     * @param list<string> $letters Введённые буквы.
+     * @param string       $gameId       Идентификатор игры.
+     * @param list<string> $guessLetters Введённые буквы.
      *
      * @return GuessWithLetters
      *
@@ -68,8 +68,10 @@ readonly class CreateGuessProcess
      * @throws SecretNotFoundException
      * @throws WordNotFoundInDictionaryException
      */
-    public function execute(string $gameId, array $letters): GuessWithLetters
-    {
+    public function execute(
+        string $gameId,
+        array $guessLetters
+    ): GuessWithLetters {
         $game = $this->gameRepository->findById($gameId);
 
         if ($game === null) {
@@ -86,7 +88,7 @@ readonly class CreateGuessProcess
         }
 
         if ($secret->isRealWord() === true) {
-            $word = \mb_strtolower(\implode('', $letters));
+            $word = \mb_strtolower(\implode('', $guessLetters));
 
             if ($this->checkWordExistenceService->execute($word) !== true) {
                 throw new WordNotFoundInDictionaryException($word);
@@ -94,31 +96,34 @@ readonly class CreateGuessProcess
         }
 
         return $this->transactionManager->transactional(
-            fn (): GuessWithLetters => $this->performExecute($game, $secret, $letters),
+            fn (): GuessWithLetters => $this->performExecute($game, $secret, $guessLetters),
         );
     }
 
     /**
      * Создаст догадку и связанные буквы.
      *
-     * @param GameInterface   $game    Игра.
-     * @param SecretInterface $secret  Загаданное слово.
-     * @param list<string>    $letters Введённые буквы.
+     * @param GameInterface   $game         Игра.
+     * @param SecretInterface $secret       Загаданное слово.
+     * @param list<string>    $guessLetters Введённые буквы.
      *
      * @return GuessWithLetters
      */
     private function performExecute(
         GameInterface $game,
         SecretInterface $secret,
-        array $letters
+        array $guessLetters
     ): GuessWithLetters {
         $guess = $this->createGuessService->execute($game);
         $guessId = (string) $guess->getId();
 
-        $statuses = $this->compareLettersAndSecretService->execute($secret, $letters);
+        $statuses = $this->wordleMatcher->execute(
+            secretLetters: \mb_str_split((string) $secret->getValue()),
+            guessLetters: $guessLetters,
+        );
         $letterEntities = [];
 
-        foreach ($letters as $letterIndex => $value) {
+        foreach ($guessLetters as $letterIndex => $value) {
             $letterEntities[] = $this->letterFactory->create(
                 guessId: $guessId,
                 index: $letterIndex + 1,

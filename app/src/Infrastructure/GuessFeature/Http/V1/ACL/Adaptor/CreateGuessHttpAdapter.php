@@ -51,12 +51,12 @@ readonly class CreateGuessHttpAdapter
             throw new ValidatorException($violations);
         }
 
-        /** @var list<string> $letters */
-        $letters = $body['data']['attributes']['letters'];
+        /** @var list<string> $guessLetters */
+        $guessLetters = $body['data']['attributes']['letters'];
 
         return $this->createGuessProcess->execute(
             gameId: (string) $body['data']['attributes']['gameId'],
-            letters: $letters,
+            guessLetters: $guessLetters,
         );
     }
 

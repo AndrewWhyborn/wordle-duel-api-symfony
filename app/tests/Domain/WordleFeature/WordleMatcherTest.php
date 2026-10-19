@@ -2,46 +2,43 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Application\GuessFeature\Service;
+namespace App\Tests\Domain\WordleFeature;
 
-use App\Application\GuessFeature\Service\CompareLettersAndSecretService;
 use App\Domain\LetterFeature\Enum\LetterStatus;
-use App\Domain\SecretFeature\Model\SecretInterface;
+use App\Domain\WordleFeature\WordleMatcher;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Тесты сравнения букв догадки с загаданным словом.
  */
-final class CompareLettersAndSecretServiceTest extends TestCase
+final class WordleMatcherTest extends TestCase
 {
-    private CompareLettersAndSecretService $service;
+    private WordleMatcher $matcher;
 
     protected function setUp(): void
     {
-        $this->service = new CompareLettersAndSecretService();
+        $this->matcher = new WordleMatcher();
     }
 
     /**
-     * @param list<string>       $letters
+     * @param list<string>       $secretLetters
+     * @param list<string>       $guessLetters
      * @param list<LetterStatus> $expected
      */
     #[DataProvider('comparisonCasesProvider')]
-    public function testCompareLetters(string $secretValue, array $letters, array $expected): void
+    public function testCompareLetters(array $secretLetters, array $guessLetters, array $expected): void
     {
-        $secret = $this->createStub(SecretInterface::class);
-        $secret->method('getValue')->willReturn($secretValue);
-
-        $this->assertSame($expected, $this->service->execute($secret, $letters));
+        $this->assertSame($expected, $this->matcher->execute($secretLetters, $guessLetters));
     }
 
     /**
-     * @return iterable<string, array{string, list<string>, list<LetterStatus>}>
+     * @return iterable<string, array{list<string>, list<string>, list<LetterStatus>}>
      */
     public static function comparisonCasesProvider(): iterable
     {
         yield 'агент vs агент — все SUCCESS' => [
-            'агент',
+            ['а', 'г', 'е', 'н', 'т'],
             ['а', 'г', 'е', 'н', 'т'],
             [
                 LetterStatus::SUCCESS,
@@ -53,7 +50,7 @@ final class CompareLettersAndSecretServiceTest extends TestCase
         ];
 
         yield 'агент vs палка — только первая а NEAR' => [
-            'палка',
+            ['п', 'а', 'л', 'к', 'а'],
             ['а', 'г', 'е', 'н', 'т'],
             [
                 LetterStatus::NEAR,
@@ -65,7 +62,7 @@ final class CompareLettersAndSecretServiceTest extends TestCase
         ];
 
         yield 'галка vs палка — FAR и четыре SUCCESS' => [
-            'палка',
+            ['п', 'а', 'л', 'к', 'а'],
             ['г', 'а', 'л', 'к', 'а'],
             [
                 LetterStatus::FAR,
@@ -77,7 +74,7 @@ final class CompareLettersAndSecretServiceTest extends TestCase
         ];
 
         yield 'калач vs палка — к NEAR, а SUCCESS, л SUCCESS, а NEAR, ч FAR' => [
-            'палка',
+            ['п', 'а', 'л', 'к', 'а'],
             ['к', 'а', 'л', 'а', 'ч'],
             [
                 LetterStatus::NEAR,
@@ -89,7 +86,7 @@ final class CompareLettersAndSecretServiceTest extends TestCase
         ];
 
         yield 'альфа vs агент — вторая а FAR после SUCCESS' => [
-            'агент',
+            ['а', 'г', 'е', 'н', 'т'],
             ['а', 'л', 'ь', 'ф', 'а'],
             [
                 LetterStatus::SUCCESS,
