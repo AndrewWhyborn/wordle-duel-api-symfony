@@ -17,10 +17,10 @@ use App\Domain\GameFeature\Repository\GameRepositoryInterface;
 use App\Domain\LetterFeature\Enum\LetterStatus;
 use App\Domain\LetterFeature\Factory\LetterFactoryInterface;
 use App\Domain\LetterFeature\Storage\CreateLetterStorageInterface;
+use App\Domain\Common\Transaction\TransactionManagerInterface;
 use App\Domain\SecretFeature\Exception\SecretNotFoundException;
 use App\Domain\SecretFeature\Model\SecretInterface;
 use App\Domain\SecretFeature\Repository\SecretRepositoryInterface;
-use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Процесс создания догадки.
@@ -35,15 +35,15 @@ readonly class CreateGuessProcess
     /**
      * Создаст процесс.
      *
-     * @param GameRepositoryInterface        $gameRepository                 Репозиторий для чтения игр.
-     * @param CreateGuessService             $createGuessService             Служба создания догадки.
-     * @param CompareLettersAndSecretService $compareLettersAndSecretService Служба сравнения букв с загаданным словом.
-     * @param LetterFactoryInterface         $letterFactory                  Фабрика для создания сущности буквы.
-     * @param CreateLetterStorageInterface   $createLetterStorage            Служба сохранения букв.
-     * @param ChangeGameStatusService        $changeGameStatusService        Служба смены статуса игры.
-     * @param EntityManagerInterface              $entityManager                 Менеджер сущностей.
-     * @param SecretRepositoryInterface           $secretRepository              Репозиторий секретных слов.
-     * @param CheckWordExistenceServiceInterface  $checkWordExistenceService     Служба проверки слова в словаре.
+     * @param GameRepositoryInterface               $gameRepository                 Репозиторий для чтения игр.
+     * @param CreateGuessService                    $createGuessService             Служба создания догадки.
+     * @param CompareLettersAndSecretService        $compareLettersAndSecretService Служба сравнения букв с загаданным словом.
+     * @param LetterFactoryInterface                $letterFactory                  Фабрика для создания сущности буквы.
+     * @param CreateLetterStorageInterface          $createLetterStorage            Служба сохранения букв.
+     * @param ChangeGameStatusService               $changeGameStatusService        Служба смены статуса игры.
+     * @param TransactionManagerInterface           $transactionManager             Менеджер транзакций.
+     * @param SecretRepositoryInterface             $secretRepository               Репозиторий секретных слов.
+     * @param CheckWordExistenceServiceInterface    $checkWordExistenceService      Служба проверки слова в словаре.
      */
     public function __construct(
         private GameRepositoryInterface $gameRepository,
@@ -52,7 +52,7 @@ readonly class CreateGuessProcess
         private LetterFactoryInterface $letterFactory,
         private CreateLetterStorageInterface $createLetterStorage,
         private ChangeGameStatusService $changeGameStatusService,
-        private EntityManagerInterface $entityManager,
+        private TransactionManagerInterface $transactionManager,
         private SecretRepositoryInterface $secretRepository,
         private CheckWordExistenceServiceInterface $checkWordExistenceService,
     ) {
@@ -94,7 +94,9 @@ readonly class CreateGuessProcess
             }
         }
 
-        return $this->performExecute($game, $secret, $letters);
+        return $this->transactionManager->transactional(
+            fn (): GuessWithLetters => $this->performExecute($game, $secret, $letters),
+        );
     }
 
     /**
@@ -111,8 +113,6 @@ readonly class CreateGuessProcess
         SecretInterface $secret,
         array $letters
     ): GuessWithLetters {
-        $this->entityManager->beginTransaction();
-
         $guess = $this->createGuessService->execute($game);
         $guessId = (string) $guess->getId();
 
@@ -134,14 +134,10 @@ readonly class CreateGuessProcess
             $this->changeGameStatusService->execute($game, GameStatus::FAILED);
         }
 
-        $guessWithLetters = new GuessWithLetters(
+        return new GuessWithLetters(
             guess: $guess,
             letters: $this->createLetterStorage->saveAll($letterEntities),
         );
-
-        $this->entityManager->commit();
-
-        return $guessWithLetters;
     }
 
     /**
