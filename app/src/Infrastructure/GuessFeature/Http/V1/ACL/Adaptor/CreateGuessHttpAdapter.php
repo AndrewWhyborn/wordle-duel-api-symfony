@@ -9,6 +9,7 @@ use App\Application\GuessFeature\Process\CreateGuessProcess;
 use App\Domain\WordleFeature\WordleRules;
 use App\Infrastructure\Common\Http\V1\Constraint\JsonApiConstraintFactory;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
+use App\Infrastructure\Common\JsonEncoding\JsonDecoder;
 use App\Infrastructure\GuessFeature\Http\V1\Enum\GuessResourceType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints;
@@ -39,10 +40,11 @@ readonly class CreateGuessHttpAdapter
      * @return GuessWithLetters
      *
      * @throws ValidatorException
+     * @throws \JsonException
      */
     public function execute(Request $request): GuessWithLetters
     {
-        $body = \json_decode($request->getContent(), true) ?? [];
+        $body = JsonDecoder::decode($request->getContent());
 
         $violations = $this->validator->validate($body, $this->getConstraint());
         if ($violations->count() > 0) {

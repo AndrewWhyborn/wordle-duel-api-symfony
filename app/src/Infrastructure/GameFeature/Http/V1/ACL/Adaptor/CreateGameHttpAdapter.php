@@ -8,6 +8,7 @@ use App\Application\GameFeature\Process\CreateGameProcess;
 use App\Domain\GameFeature\Model\GameInterface;
 use App\Infrastructure\Common\Http\V1\Constraint\JsonApiConstraintFactory;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
+use App\Infrastructure\Common\JsonEncoding\JsonDecoder;
 use App\Infrastructure\GameFeature\Http\V1\Enum\GameResourceType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints;
@@ -38,10 +39,11 @@ readonly class CreateGameHttpAdapter
      * @return GameInterface
      *
      * @throws ValidatorException
+     * @throws \JsonException
      */
     public function execute(Request $request): GameInterface
     {
-        $body = \json_decode($request->getContent(), true) ?? [];
+        $body = JsonDecoder::decode($request->getContent());
 
         $violations = $this->validator->validate($body, $this->getConstraint());
         if ($violations->count() > 0) {

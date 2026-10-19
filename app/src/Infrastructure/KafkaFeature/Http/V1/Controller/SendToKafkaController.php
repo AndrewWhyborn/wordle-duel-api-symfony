@@ -25,10 +25,10 @@ class SendToKafkaController extends AbstractController
      * @throws JsonException
      */
     #[Route(path: '/api/v1/kafka', name: 'api_v1_send_to_kafka', methods: [Request::METHOD_POST])]
-    public function __invoke(MessageBusInterface $messageBus, JsonEncoder $jsonEncoder): void
+    public function __invoke(MessageBusInterface $messageBus): void
     {
-        $content = $jsonEncoder->encode([
-            'message' => 'Hello from Wordle Duel Api Symfony!!!'
+        $content = JsonEncoder::encode([
+            'message' => 'Hello from Wordle Duel Api Symfony!!!',
         ]);
         $message = new KafkaMessage($content);
         $messageBus->dispatch($message);

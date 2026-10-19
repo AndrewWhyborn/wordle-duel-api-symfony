@@ -17,15 +17,13 @@ readonly class AbstractYandexDictionaryHttpService
     /**
      * Создаст службу.
      *
-     * @param LoggerInterface     $logger      Служба журналирования.
-     * @param HttpClientInterface $httpClient  Служба HTTP запросов.
-     * @param JsonDecoder         $jsonDecoder Преобразователь строк формата JSON.
-     * @param string              $apiKey      АПИ-ключ.
+     * @param LoggerInterface     $logger     Служба журналирования.
+     * @param HttpClientInterface $httpClient Служба HTTP запросов.
+     * @param string              $apiKey     АПИ-ключ.
      */
     public function __construct(
         private LoggerInterface $logger,
         private HttpClientInterface $httpClient,
-        private JsonDecoder $jsonDecoder,
         private string $apiKey,
     ) {
     }
@@ -79,7 +77,7 @@ readonly class AbstractYandexDictionaryHttpService
                 ],
             );
 
-            $responseData = $this->jsonDecoder->decode($rawContents);
+            $responseData = JsonDecoder::decode($rawContents);
 
             if (isset($responseData['error']) && $responseData['error'] !== '') {
                 throw new \Exception((string) $responseData['error']);

@@ -12,6 +12,7 @@ use App\Domain\DictionaryFeature\Exception\WordNotFoundInDictionaryException;
 use App\Domain\DictionaryFeature\Service\CheckWordExistenceServiceInterface;
 use App\Domain\GameFeature\Enum\GameStatus;
 use App\Domain\GameFeature\Exception\GameNotFoundException;
+use App\Domain\GameFeature\Exception\GameNotInProgressException;
 use App\Domain\GameFeature\Model\GameInterface;
 use App\Domain\GameFeature\Repository\GameRepositoryInterface;
 use App\Domain\LetterFeature\Enum\LetterStatus;
@@ -63,6 +64,7 @@ readonly class CreateGuessProcess
      * @return GuessWithLetters
      *
      * @throws GameNotFoundException
+     * @throws GameNotInProgressException
      * @throws SecretNotFoundException
      * @throws WordNotFoundInDictionaryException
      */
@@ -70,11 +72,12 @@ readonly class CreateGuessProcess
     {
         $game = $this->gameRepository->findById($gameId);
 
-        if (
-            $game === null
-            || $game->getStatus()->value !== GameStatus::IN_PROGRESS->value
-        ) {
+        if ($game === null) {
             throw new GameNotFoundException();
+        }
+
+        if ($game->getStatus() !== GameStatus::IN_PROGRESS) {
+            throw new GameNotInProgressException();
         }
 
         $secret = $this->secretRepository->findById($game->getSecretId());

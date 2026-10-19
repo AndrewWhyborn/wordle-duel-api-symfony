@@ -9,6 +9,7 @@ use App\Domain\SecretFeature\Model\SecretInterface;
 use App\Domain\WordleFeature\WordleRules;
 use App\Infrastructure\Common\Http\V1\Constraint\JsonApiConstraintFactory;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
+use App\Infrastructure\Common\JsonEncoding\JsonDecoder;
 use App\Infrastructure\DictionaryFeature\Constraint\WordExists;
 use App\Infrastructure\SecretFeature\Http\V1\Enum\SecretResourceType;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,11 +41,12 @@ readonly class CreateSecretHttpAdapter
      * @return SecretInterface
      *
      * @throws ValidatorException
+     * @throws \JsonException
      * @throws \Exception
      */
     public function execute(Request $request): SecretInterface
     {
-        $body  = \json_decode($request->getContent(), true) ?? [];
+        $body = JsonDecoder::decode($request->getContent());
 
         $violations = $this->validator->validate($body, $this->getConstraint());
         if ($violations->count() > 0) {

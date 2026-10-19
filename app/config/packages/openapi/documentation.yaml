@@ -489,11 +489,26 @@ nelmio_api_doc:
                   schema:
                     $ref: '#/components/schemas/JsonApiErrors'
             '404':
-              description: Игра не найдена или уже завершена
+              description: Игра с указанным gameId не найдена
               content:
                 application/json:
                   schema:
                     $ref: '#/components/schemas/JsonApiErrors'
+            '409':
+              description: |
+                Игра уже закончена (`completed` / `failed`). `detail`: `Игра уже закончена.`
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/JsonApiErrors'
+                  examples:
+                    gameNotInProgress:
+                      summary: Игра уже закончена
+                      value:
+                        errors:
+                        - status: '409'
+                          title: Конфликт.
+                          detail: Игра уже закончена.
             '500':
               description: 'Непредвиденная ошибка (title: «Непредвиденная ошибка»).'
               content:

@@ -7,6 +7,7 @@ namespace App\Infrastructure\Common\Http\V1\Exception;
 use App\Domain\DictionaryFeature\Exception\WordNotFoundInDictionaryException;
 use App\Domain\GameFeature\Exception\GameCreationConflictException;
 use App\Domain\GameFeature\Exception\GameNotFoundException;
+use App\Domain\GameFeature\Exception\GameNotInProgressException;
 use App\Domain\GameFeature\Exception\InvalidGameStatusTransitionException;
 use App\Domain\GuessFeature\Exception\GuessNotFoundException;
 use App\Domain\SecretFeature\Exception\SecretNotFoundException;
@@ -46,6 +47,14 @@ readonly class JsonApiExceptionMapper
             return $this->jsonResponse(
                 status: Response::HTTP_BAD_REQUEST,
                 data: ['errors' => $this->validationExceptionResponder->compose($exception->violations)],
+            );
+        }
+
+        if ($exception instanceof \JsonException) {
+            return $this->errorResponse(
+                status: Response::HTTP_BAD_REQUEST,
+                title: 'Ошибка валидации',
+                detail: 'Тело запроса должно быть корректным JSON.',
             );
         }
 
@@ -89,6 +98,7 @@ readonly class JsonApiExceptionMapper
                 'Не найдено',
             ],
             $exception instanceof GameCreationConflictException,
+            $exception instanceof GameNotInProgressException,
             $exception instanceof InvalidGameStatusTransitionException => [
                 Response::HTTP_CONFLICT,
                 'Конфликт.',

@@ -9,7 +9,7 @@ namespace App\Domain\GameFeature\Exception;
  */
 class GameNotFoundException extends \RuntimeException
 {
-    public function __construct(string $message = 'Игра не найдена или уже закончена.')
+    public function __construct(string $message = 'Игра не найдена.')
     {
         parent::__construct($message);
     }
