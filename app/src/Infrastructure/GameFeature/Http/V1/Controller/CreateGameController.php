@@ -8,8 +8,8 @@ use App\Infrastructure\Common\Http\Middleware\XAuthTokenMiddleware;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
 use App\Infrastructure\GameFeature\Http\V1\ACL\Adaptor\CreateGameHttpAdapter;
 use App\Infrastructure\GameFeature\Http\V1\Responder\GameResponder;
+use JsonException;
 use Kafkiansky\SymfonyMiddleware\Attribute\Middleware;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,7 +38,7 @@ final readonly class CreateGameController
      *
      * @param Request $request HTTP-запрос.
      *
-     * @throws ValidatorException
+     * @throws ValidatorException|JsonException
      */
     #[Route(
         path: '/api/v1/games',

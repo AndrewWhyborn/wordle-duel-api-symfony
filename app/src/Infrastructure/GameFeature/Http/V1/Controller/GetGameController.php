@@ -9,7 +9,6 @@ use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
 use App\Infrastructure\GameFeature\Http\V1\ACL\Adaptor\GetGameHttpAdapter;
 use App\Infrastructure\GameFeature\Http\V1\Responder\GameResponder;
 use Kafkiansky\SymfonyMiddleware\Attribute\Middleware;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

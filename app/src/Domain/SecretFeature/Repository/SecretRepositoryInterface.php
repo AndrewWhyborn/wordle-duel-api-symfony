@@ -19,4 +19,11 @@ interface SecretRepositoryInterface
      * @return SecretInterface|null
      */
     public function findById(string $id): ?SecretInterface;
+
+    /**
+     * Проверит, занят ли идентификатор.
+     *
+     * @param string $id Идентификатор загаданного слова.
+     */
+    public function existsById(string $id): bool;
 }

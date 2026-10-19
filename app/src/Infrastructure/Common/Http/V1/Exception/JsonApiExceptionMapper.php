@@ -10,6 +10,7 @@ use App\Domain\GameFeature\Exception\GameNotFoundException;
 use App\Domain\GameFeature\Exception\GameNotInProgressException;
 use App\Domain\GameFeature\Exception\InvalidGameStatusTransitionException;
 use App\Domain\GuessFeature\Exception\GuessNotFoundException;
+use App\Domain\SecretFeature\Exception\SecretIdGenerationFailedException;
 use App\Domain\SecretFeature\Exception\SecretNotFoundException;
 use App\Infrastructure\Common\Http\V1\Responder\JsonApiErrorResponder;
 use App\Infrastructure\Common\Http\V1\Responder\ValidationExceptionResponder;
@@ -102,6 +103,10 @@ readonly class JsonApiExceptionMapper
             $exception instanceof InvalidGameStatusTransitionException => [
                 Response::HTTP_CONFLICT,
                 'Конфликт.',
+            ],
+            $exception instanceof SecretIdGenerationFailedException => [
+                Response::HTTP_SERVICE_UNAVAILABLE,
+                'Сервис временно недоступен',
             ],
             default => null,
         };

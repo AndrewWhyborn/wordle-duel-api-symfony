@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\StringGeneratorFeature;
 
 use App\Domain\StringGeneratorFeature\RandomStringGeneratorInterface;
+use Random\RandomException;
 
 /**
  * Генератор строк.
@@ -13,6 +14,7 @@ class RandomStringGenerator implements RandomStringGeneratorInterface
 {
     /**
      * @inheritDoc
+     * @throws RandomException
      */
     public function generate(int $length): string
     {

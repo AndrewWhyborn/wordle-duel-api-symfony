@@ -65,11 +65,11 @@ services:
     App\Domain\Common\Transaction\TransactionManagerInterface:
         alias: App\Infrastructure\Database\Transaction\DoctrineTransactionManager
 
-    App\Domain\StringGenerator\RandomStringGeneratorInterface:
-        alias: App\Infrastructure\StringGenerator\RandomStringGenerator
+    App\Domain\StringGeneratorFeature\RandomStringGeneratorInterface:
+        alias: App\Infrastructure\StringGeneratorFeature\RandomStringGenerator
 
-    App\Domain\TokenFeature\Service\CheckAvailableTokenServiceInterface:
-        alias: App\Infrastructure\TokenFeature\Service\CheckAvailableTokenService
+    App\Domain\SecretFeature\Service\GenerateUniqueSecretIdInterface:
+        alias: App\Infrastructure\SecretFeature\Service\GenerateUniqueSecretId
 
     App\Infrastructure\DictionaryFeature\Yandex\Http\LookupHttpService:
         arguments:

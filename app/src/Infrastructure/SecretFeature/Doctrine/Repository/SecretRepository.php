@@ -32,4 +32,12 @@ class SecretRepository extends ServiceEntityRepository implements SecretReposito
     {
         return $this->find($id);
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function existsById(string $id): bool
+    {
+        return $this->count(['id' => $id]) > 0;
+    }
 }
