@@ -7,7 +7,7 @@ namespace App\Infrastructure\GameFeature\Http\V1\ACL\Adaptor;
 use App\Application\GameFeature\DTO\GameWithGuesses;
 use App\Application\GameFeature\Service\GetGameService;
 use App\Domain\GameFeature\Exception\GameNotFoundException;
-use App\Infrastructure\Common\Http\V1\Constraint\CollectionConstraintMessage;
+use App\Infrastructure\Common\Http\V1\Constraint\JsonApiConstraintFactory;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Constraints;
@@ -62,41 +62,17 @@ readonly class GetGameHttpAdapter
      */
     private function getConstraint(): Constraints\Collection
     {
-        return new Constraints\Collection(
-            fields: [
-                'filter' => [
-                    new Constraints\NotBlank(message: 'Укажите фильтр filter.'),
-                    new Constraints\Type(
-                        type: 'array',
-                        message: 'Фильтр filter должен быть объектом.',
-                    ),
-                    new Constraints\Collection(
-                        fields: [
-                            'secretId' => [
-                                new Constraints\NotBlank(
-                                    message: 'Укажите идентификатор загаданного слова filter[secretId].',
-                                ),
-                                new Constraints\Type(
-                                    type: 'string',
-                                    message: 'Идентификатор загаданного слова должен быть строкой.',
-                                ),
-                                new Constraints\Length(
-                                    max: 32,
-                                    maxMessage: 'Идентификатор загаданного слова должен быть не длиннее {{ limit }} символов.',
-                                ),
-                            ],
-                        ],
-                        allowExtraFields: false,
-                        allowMissingFields: false,
-                        extraFieldsMessage: CollectionConstraintMessage::EXTRA,
-                        missingFieldsMessage: CollectionConstraintMessage::MISSING,
-                    ),
-                ],
+        return JsonApiConstraintFactory::object([
+            'filter' => [
+                new Constraints\NotBlank(message: 'Укажите фильтр filter.'),
+                new Constraints\Type(
+                    type: 'array',
+                    message: 'Фильтр filter должен быть объектом.',
+                ),
+                JsonApiConstraintFactory::object([
+                    'secretId' => JsonApiConstraintFactory::secretId('filter[secretId]'),
+                ]),
             ],
-            allowExtraFields: false,
-            allowMissingFields: false,
-            extraFieldsMessage: CollectionConstraintMessage::EXTRA,
-            missingFieldsMessage: CollectionConstraintMessage::MISSING,
-        );
+        ]);
     }
 }

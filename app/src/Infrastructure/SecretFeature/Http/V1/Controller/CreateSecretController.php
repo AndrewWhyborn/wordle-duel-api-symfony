@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * Контроллер для сохранения загаданного слова.
  */
 #[Middleware([XAuthTokenMiddleware::class])]
-final class CreateSecretController extends AbstractController
+final readonly class CreateSecretController
 {
     /**
      * Создаст контроллер.
@@ -28,8 +28,8 @@ final class CreateSecretController extends AbstractController
      * @param SecretResponder         $secretResponder         Формирование ответа JSON:API для загаданного слова.
      */
     public function __construct(
-        private readonly CreateSecretHttpAdapter $createSecretHttpAdapter,
-        private readonly SecretResponder $secretResponder,
+        private CreateSecretHttpAdapter $createSecretHttpAdapter,
+        private SecretResponder $secretResponder,
     ) {
     }
 

@@ -21,17 +21,13 @@ use App\Domain\Common\Transaction\TransactionManagerInterface;
 use App\Domain\SecretFeature\Exception\SecretNotFoundException;
 use App\Domain\SecretFeature\Model\SecretInterface;
 use App\Domain\SecretFeature\Repository\SecretRepositoryInterface;
+use App\Domain\WordleFeature\WordleRules;
 
 /**
  * Процесс создания догадки.
  */
 readonly class CreateGuessProcess
 {
-    /**
-     * Максимальное кол-во догадок.
-     */
-    const MAX_GUESSES = 6;
-
     /**
      * Создаст процесс.
      *
@@ -130,7 +126,7 @@ readonly class CreateGuessProcess
 
         if ($this->isAllSuccess($statuses)) {
             $this->changeGameStatusService->execute($game, GameStatus::COMPLETED);
-        } elseif ($guess->getIndex() === self::MAX_GUESSES) {
+        } elseif ($guess->getIndex() === WordleRules::MAX_GUESSES) {
             $this->changeGameStatusService->execute($game, GameStatus::FAILED);
         }
 

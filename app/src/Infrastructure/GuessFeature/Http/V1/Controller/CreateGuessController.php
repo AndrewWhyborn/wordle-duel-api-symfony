@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * Контроллер для создания догадки.
  */
 #[Middleware([XAuthTokenMiddleware::class])]
-final class CreateGuessController extends AbstractController
+final readonly class CreateGuessController
 {
     /**
      * Создаст контроллер.
@@ -28,8 +28,8 @@ final class CreateGuessController extends AbstractController
      * @param GuessResponder         $guessResponder         Формирование ответа JSON:API для догадки.
      */
     public function __construct(
-        private readonly CreateGuessHttpAdapter $createGuessHttpAdapter,
-        private readonly GuessResponder $guessResponder,
+        private CreateGuessHttpAdapter $createGuessHttpAdapter,
+        private GuessResponder $guessResponder,
     ) {
     }
 

@@ -6,7 +6,7 @@ namespace App\Infrastructure\GameFeature\Http\V1\ACL\Adaptor;
 
 use App\Application\GameFeature\Process\CreateGameProcess;
 use App\Domain\GameFeature\Model\GameInterface;
-use App\Infrastructure\Common\Http\V1\Constraint\CollectionConstraintMessage;
+use App\Infrastructure\Common\Http\V1\Constraint\JsonApiConstraintFactory;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
 use App\Infrastructure\GameFeature\Http\V1\Enum\GameResourceType;
 use Symfony\Component\HttpFoundation\Request;
@@ -59,47 +59,11 @@ readonly class CreateGameHttpAdapter
      */
     private function getConstraint(): Constraints\Collection
     {
-        return new Constraints\Collection(
-            fields: [
-                'data' => new Constraints\Collection(
-                    fields: [
-                        'type' => [
-                            new Constraints\NotBlank(message: 'Укажите тип ресурса data.type.'),
-                            new Constraints\Choice(
-                                choices: [GameResourceType::GAMES->value],
-                                message: 'Недопустимый тип ресурса data.type.',
-                            ),
-                        ],
-                        'attributes' => new Constraints\Collection(
-                            fields: [
-                                'secretId' => [
-                                    new Constraints\NotBlank(message: 'Укажите идентификатор загаданного слова attributes.secretId.'),
-                                    new Constraints\Type(
-                                        type: 'string',
-                                        message: 'Идентификатор загаданного слова должен быть строкой.',
-                                    ),
-                                    new Constraints\Length(
-                                        max: 32,
-                                        maxMessage: 'Идентификатор загаданного слова должен быть не длиннее {{ limit }} символов.',
-                                    ),
-                                ],
-                            ],
-                            allowExtraFields: false,
-                            allowMissingFields: false,
-                            extraFieldsMessage: CollectionConstraintMessage::EXTRA,
-                            missingFieldsMessage: CollectionConstraintMessage::MISSING,
-                        ),
-                    ],
-                    allowExtraFields: false,
-                    allowMissingFields: false,
-                    extraFieldsMessage: CollectionConstraintMessage::EXTRA,
-                    missingFieldsMessage: CollectionConstraintMessage::MISSING,
-                ),
-            ],
-            allowExtraFields: false,
-            allowMissingFields: false,
-            extraFieldsMessage: CollectionConstraintMessage::EXTRA,
-            missingFieldsMessage: CollectionConstraintMessage::MISSING,
+        return JsonApiConstraintFactory::resourceDocument(
+            type: GameResourceType::GAMES->value,
+            attributes: JsonApiConstraintFactory::object([
+                'secretId' => JsonApiConstraintFactory::secretId('attributes.secretId'),
+            ]),
         );
     }
 }

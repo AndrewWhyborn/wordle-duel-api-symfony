@@ -6,7 +6,8 @@ namespace App\Infrastructure\GuessFeature\Http\V1\ACL\Adaptor;
 
 use App\Application\GuessFeature\DTO\GuessWithLetters;
 use App\Application\GuessFeature\Process\CreateGuessProcess;
-use App\Infrastructure\Common\Http\V1\Constraint\CollectionConstraintMessage;
+use App\Domain\WordleFeature\WordleRules;
+use App\Infrastructure\Common\Http\V1\Constraint\JsonApiConstraintFactory;
 use App\Infrastructure\Common\Http\V1\Exception\ValidatorException;
 use App\Infrastructure\GuessFeature\Http\V1\Enum\GuessResourceType;
 use Symfony\Component\HttpFoundation\Request;
@@ -65,71 +66,48 @@ readonly class CreateGuessHttpAdapter
      */
     private function getConstraint(): Constraints\Collection
     {
-        return new Constraints\Collection(
-            fields: [
-                'data' => new Constraints\Collection(
-                    fields: [
-                        'type' => [
-                            new Constraints\NotBlank(message: 'Укажите тип ресурса data.type.'),
-                            new Constraints\Choice(
-                                choices: [GuessResourceType::GUESSES->value],
-                                message: 'Недопустимый тип ресурса data.type.',
-                            ),
-                        ],
-                        'attributes' => new Constraints\Collection(
-                            fields: [
-                                'gameId' => [
-                                    new Constraints\NotBlank(message: 'Укажите идентификатор игры attributes.gameId.'),
-                                    new Constraints\Type(
-                                        type: 'string',
-                                        message: 'Идентификатор игры должен быть строкой.',
-                                    ),
-                                    new Constraints\Uuid(
-                                        message: 'Идентификатор игры должен быть корректным UUID.',
-                                    ),
-                                ],
-                                'letters' => [
-                                    new Constraints\NotBlank(message: 'Необходимо ввести слово.'),
-                                    new Constraints\Type(
-                                        type: 'array',
-                                        message: 'Слово должно быть передано в виде массива букв.',
-                                    ),
-                                    new Constraints\Count(
-                                        exactly: 5,
-                                        exactMessage: 'Слово должно быть длиной в 5 букв.',
-                                    ),
-                                    new Constraints\All([
-                                        new Constraints\Type(
-                                            type: 'string',
-                                            message: 'Слово должно быть передано в виде массива букв.',
-                                        ),
-                                        new Constraints\Length(
-                                            exactly: 1,
-                                            exactMessage: 'Слово должно быть передано в виде массива букв.',
-                                        ),
-                                        new Constraints\Regex(
-                                            pattern: '/^[А-Яа-яЁё]$/u',
-                                            message: 'Разрешено вводить только кириллические символы.',
-                                        ),
-                                    ]),
-                                ],
-                            ],
-                            allowExtraFields: false,
-                            allowMissingFields: false,
-                            extraFieldsMessage: CollectionConstraintMessage::EXTRA,
-                            missingFieldsMessage: CollectionConstraintMessage::MISSING,
+        return JsonApiConstraintFactory::resourceDocument(
+            type: GuessResourceType::GUESSES->value,
+            attributes: JsonApiConstraintFactory::object([
+                'gameId' => [
+                    new Constraints\NotBlank(message: 'Укажите идентификатор игры attributes.gameId.'),
+                    new Constraints\Type(
+                        type: 'string',
+                        message: 'Идентификатор игры должен быть строкой.',
+                    ),
+                    new Constraints\Uuid(
+                        message: 'Идентификатор игры должен быть корректным UUID.',
+                    ),
+                ],
+                'letters' => [
+                    new Constraints\NotBlank(message: 'Необходимо ввести слово.'),
+                    new Constraints\Type(
+                        type: 'array',
+                        message: 'Слово должно быть передано в виде массива букв.',
+                    ),
+                    new Constraints\Count(
+                        exactly: WordleRules::WORD_LENGTH,
+                        exactMessage: \sprintf(
+                            'Слово должно быть длиной в %d букв.',
+                            WordleRules::WORD_LENGTH,
                         ),
-                    ],
-                    allowExtraFields: false,
-                    allowMissingFields: false,
-                    extraFieldsMessage: CollectionConstraintMessage::EXTRA,
-                    missingFieldsMessage: CollectionConstraintMessage::MISSING,
-                ),
-            ],
-            allowExtraFields: false,
-            allowMissingFields: false,
-            extraFieldsMessage: CollectionConstraintMessage::EXTRA,
-            missingFieldsMessage: CollectionConstraintMessage::MISSING,
+                    ),
+                    new Constraints\All([
+                        new Constraints\Type(
+                            type: 'string',
+                            message: 'Слово должно быть передано в виде массива букв.',
+                        ),
+                        new Constraints\Length(
+                            exactly: 1,
+                            exactMessage: 'Слово должно быть передано в виде массива букв.',
+                        ),
+                        new Constraints\Regex(
+                            pattern: '/^[А-Яа-яЁё]$/u',
+                            message: 'Разрешено вводить только кириллические символы.',
+                        ),
+                    ]),
+                ],
+            ]),
         );
     }
 }

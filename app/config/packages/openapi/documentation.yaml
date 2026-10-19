@@ -8,7 +8,7 @@ nelmio_api_doc:
         ## Сценарий работы
 
         1. **Загадать слово** — `POST /api/v1/secrets`  
-           Создайте загаданное слово из 5 букв. В ответе получите `id` секрета
+           Создайте загаданное слово из %wordle.word_length% букв. В ответе получите `id` секрета
            (токен). При `isRealWord=true` слово проверяется в словаре;
            `allowRetry` управляет возможностью новой игры после проигрыша.
 
@@ -20,9 +20,9 @@ nelmio_api_doc:
              вместе с догадками и буквами.
 
         3. **Создавать догадки** — `POST /api/v1/guesses`  
-           Отправляйте по 5 кириллических букв с `gameId`. В ответе — статусы
+           Отправляйте по %wordle.word_length% кириллических букв с `gameId`. В ответе — статусы
            букв (`far` / `near` / `success`). При `isRealWord=true` у секрета
-           догадка тоже должна быть реальным словом. До 6 попыток; после
+           догадка тоже должна быть реальным словом. До %wordle.max_guesses% попыток; после
            угадывания или исчерпания попыток статус игры меняется на
            `completed` или `failed`.
 
@@ -329,7 +329,7 @@ nelmio_api_doc:
           - Догадки
           summary: Создать догадку
           description: |
-            Отправляет догадку из 5 кириллических букв для игры и возвращает
+            Отправляет догадку из %wordle.word_length% кириллических букв для игры и возвращает
             догадку со статусами букв.
 
             Если у загаданного слова `isRealWord=true`, склеенное из `letters` слово
@@ -342,7 +342,7 @@ nelmio_api_doc:
 
               **attributes:**
               - **gameId** — UUID игры.
-              - **letters** — ровно пять одиночных кириллических букв.
+              - **letters** — ровно %wordle.word_length% одиночных кириллических букв.
                 При `isRealWord=true` у секрета должны образовывать существующее слово.
             content:
               application/json:
@@ -527,7 +527,7 @@ nelmio_api_doc:
           tags:
           - Загаданные слова
           summary: Создать загаданное слово
-          description: Сохраняет загаданное слово из 5 букв и возвращает ресурс JSON:API.
+          description: Сохраняет загаданное слово из %wordle.word_length% букв и возвращает ресурс JSON:API.
           operationId: createSecret
           requestBody:
             required: true
@@ -535,7 +535,7 @@ nelmio_api_doc:
               Тело запроса в формате JSON:API.
 
               **attributes:**
-              - **value** — загаданное слово из 5 букв (сохраняется в верхнем регистре).
+              - **value** — загаданное слово из %wordle.word_length% букв (сохраняется в верхнем регистре).
               - **isRealWord** — если `true` (по умолчанию), секрет и догадки проверяются в словаре.
               - **allowRetry** — если `true`, после проигрыша (`failed`) можно создать новую игру
                 с тем же секретом и IP; после победы (`completed`) повтор запрещён.
@@ -619,11 +619,11 @@ nelmio_api_doc:
           properties:
             value:
               title: value
-              description: Загаданное слово из 5 букв (сохраняется в верхнем регистре).
+              description: Загаданное слово из %wordle.word_length% букв (сохраняется в верхнем регистре).
               type: string
               example: слово
-              maxLength: 5
-              minLength: 5
+              maxLength: '%wordle.word_length%'
+              minLength: '%wordle.word_length%'
             isRealWord:
               title: isRealWord
               description: >-
@@ -704,7 +704,7 @@ nelmio_api_doc:
             letters:
               title: letters
               description: >-
-                Ровно пять одиночных кириллических букв. При isRealWord=true у секрета
+                Ровно %wordle.word_length% одиночных кириллических букв. При isRealWord=true у секрета
                 склеенное слово должно существовать в словаре.
               type: array
               items:
@@ -718,8 +718,8 @@ nelmio_api_doc:
               - О
               - В
               - О
-              maxItems: 5
-              minItems: 5
+              maxItems: '%wordle.word_length%'
+              minItems: '%wordle.word_length%'
         CreateGuessRequest:
           type: object
           required:

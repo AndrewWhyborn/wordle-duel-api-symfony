@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * Контроллер для получения игры.
  */
 #[Middleware([XAuthTokenMiddleware::class])]
-final class GetGameController extends AbstractController
+final readonly class GetGameController
 {
     /**
      * Создаст контроллер.
@@ -28,8 +28,8 @@ final class GetGameController extends AbstractController
      * @param GameResponder      $gameResponder      Формирование ответа JSON:API для игры.
      */
     public function __construct(
-        private readonly GetGameHttpAdapter $getGameHttpAdapter,
-        private readonly GameResponder $gameResponder,
+        private GetGameHttpAdapter $getGameHttpAdapter,
+        private GameResponder $gameResponder,
     ) {
     }
 
