@@ -11,6 +11,6 @@ class GameCreationConflictException extends \RuntimeException
 {
     public function __construct(string $message = 'Конфликт при создании игры.')
     {
-        parent::__construct($message, 409);
+        parent::__construct($message);
     }
 }

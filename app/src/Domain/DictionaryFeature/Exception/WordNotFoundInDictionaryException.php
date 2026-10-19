@@ -12,8 +12,7 @@ class WordNotFoundInDictionaryException extends \RuntimeException
     public function __construct(string $word)
     {
         parent::__construct(
-            message: \sprintf('Слово «%s» не найдено в словаре, попробуйте другое.', $word),
-            code: 400,
+            \sprintf('Слово «%s» не найдено в словаре, попробуйте другое.', $word),
         );
     }
 }

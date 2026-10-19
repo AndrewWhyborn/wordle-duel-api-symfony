@@ -6,7 +6,7 @@ namespace App\Application\GameFeature\Service;
 
 use App\Domain\GameFeature\Enum\GameStatus;
 use App\Domain\GameFeature\Model\GameInterface;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Domain\GameFeature\Storage\UpdateGameStorageInterface;
 
 /**
  * Служба смены статуса игры.
@@ -16,10 +16,10 @@ readonly class ChangeGameStatusService
     /**
      * Создаст службу.
      *
-     * @param EntityManagerInterface $entityManager Менеджер сущностей ORM.
+     * @param UpdateGameStorageInterface $updateGameStorage Служба сохранения изменений игры.
      */
     public function __construct(
-        private EntityManagerInterface $entityManager,
+        private UpdateGameStorageInterface $updateGameStorage,
     ) {
     }
 
@@ -34,8 +34,7 @@ readonly class ChangeGameStatusService
     public function execute(GameInterface $game, GameStatus $status): GameInterface
     {
         $game->setStatus($status);
-        $this->entityManager->flush();
 
-        return $game;
+        return $this->updateGameStorage->update($game);
     }
 }

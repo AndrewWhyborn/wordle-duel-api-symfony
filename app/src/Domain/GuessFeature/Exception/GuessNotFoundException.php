@@ -11,6 +11,6 @@ class GuessNotFoundException extends \RuntimeException
 {
     public function __construct(string $message = 'Догадка не найдена.')
     {
-        parent::__construct($message, 404);
+        parent::__construct($message);
     }
 }

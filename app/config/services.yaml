@@ -38,6 +38,9 @@ services:
     App\Domain\GameFeature\Storage\CreateGameStorageInterface:
         alias: App\Infrastructure\GameFeature\Storage\CreateGameStorage
 
+    App\Domain\GameFeature\Storage\UpdateGameStorageInterface:
+        alias: App\Infrastructure\GameFeature\Storage\UpdateGameStorage
+
     App\Domain\GameFeature\Repository\GameRepositoryInterface:
         alias: App\Infrastructure\GameFeature\Doctrine\Repository\GameRepository
 
