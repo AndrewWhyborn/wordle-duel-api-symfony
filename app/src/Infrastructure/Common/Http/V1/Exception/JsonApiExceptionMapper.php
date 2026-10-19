@@ -9,7 +9,6 @@ use App\Domain\GameFeature\Exception\GameCreationConflictException;
 use App\Domain\GameFeature\Exception\GameNotFoundException;
 use App\Domain\GameFeature\Exception\GameNotInProgressException;
 use App\Domain\GameFeature\Exception\InvalidGameStatusTransitionException;
-use App\Domain\GuessFeature\Exception\GuessNotFoundException;
 use App\Domain\SecretFeature\Exception\SecretIdGenerationFailedException;
 use App\Domain\SecretFeature\Exception\SecretNotFoundException;
 use App\Infrastructure\Common\Http\V1\Responder\JsonApiErrorResponder;
@@ -93,8 +92,7 @@ readonly class JsonApiExceptionMapper
                 'Ошибка валидации',
             ],
             $exception instanceof GameNotFoundException,
-            $exception instanceof SecretNotFoundException,
-            $exception instanceof GuessNotFoundException => [
+            $exception instanceof SecretNotFoundException => [
                 Response::HTTP_NOT_FOUND,
                 'Не найдено',
             ],
